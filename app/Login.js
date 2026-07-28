@@ -7,7 +7,7 @@ import { useRouter } from "expo-router";
 
 // ✅ Import your existing Nammagram logo
 import LoginBackground from "../app/assets/login_bg.png";
-import NammagramLogo from "../app/assets/Nammagram.png";
+import NammagramLogo from "../app/assets/ng-logo.png";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -36,7 +36,7 @@ export default function LoginScreen() {
       {/* Logo + Title outside card */}
       <View style={styles.header}>
         <Image source={NammagramLogo} style={styles.logo} resizeMode="contain" />
-        <Text style={styles.appTitle}>Nammagram</Text>
+        {/* <Text style={styles.appTitle}>Nammagram</Text> */}
       </View>
 
       {/* Card containing form */}
@@ -102,9 +102,9 @@ export default function LoginScreen() {
 
 const styles = StyleSheet.create({
   background: { flex: 1, justifyContent: "center", alignItems: "center", padding: 20 },
-  header: { alignItems: "center", marginBottom: 15 },
-  logo: { width: 85, height: 70, marginBottom: 5 },
-  appTitle: { fontSize: 28, fontWeight: "bold", color: "#006d3a" },
+  header: { alignItems: "center", },
+  logo: { width: 150, height: 100 },
+  // appTitle: { fontSize: 28, fontWeight: "bold", color: "#006d3a" },
   card: {
     width: "100%",
     backgroundColor: "#ffffff",

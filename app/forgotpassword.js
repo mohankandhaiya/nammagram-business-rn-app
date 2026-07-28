@@ -5,7 +5,7 @@ import { sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "../app/helpers/firebaseConfig";
 import { useRouter } from "expo-router";
 
-import NammagramLogo from "../app/assets/Nammagram.png";
+import NammagramLogo from "../app/assets/ng-logo.png";
 
 export default function ForgotPasswordScreen() {
   const [email, setEmail] = useState("");
@@ -28,7 +28,7 @@ export default function ForgotPasswordScreen() {
     >
       <View style={styles.header}>
         <Image source={NammagramLogo} style={styles.logo} resizeMode="contain" />
-        <Text style={styles.appTitle}>Nammagram</Text>
+        
       </View>
 
       <Card style={styles.card}>
@@ -67,8 +67,8 @@ export default function ForgotPasswordScreen() {
 
 const styles = StyleSheet.create({
   background: { flex: 1, justifyContent: "center", alignItems: "center", padding: 20 },
-  header: { alignItems: "center", marginBottom: 20 },
-  logo: { width: 85, height: 70, marginBottom: 5 },
+  header: { alignItems: "center",},
+  logo: { width: 150, height: 100, },
   appTitle: { fontSize: 28, fontWeight: "bold", color: "#006d3a" },
   card: { width: "100%", backgroundColor: "#fff", borderRadius: 12, paddingVertical: 10, elevation: 4 },
   subtitle: { fontSize: 20, fontWeight: "600", color: "#006d3a", textAlign: "center", marginBottom: 20 },
