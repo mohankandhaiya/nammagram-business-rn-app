@@ -58,7 +58,7 @@ export default function Wallet() {
         </View>
 
         {/* Send Money */}
-        <View style={styles.section}>
+        {/* <View style={styles.section}>
           <Text style={styles.sectionTitle}>Send Money</Text>
           <TextInput
             style={styles.input}
@@ -76,7 +76,7 @@ export default function Wallet() {
           <TouchableOpacity style={styles.sendButton} onPress={handleSendMoney}>
             <Text style={styles.sendButtonText}>Send</Text>
           </TouchableOpacity>
-        </View>
+        </View> */}
 
         {/* Transactions */}
         <View style={styles.section}>
