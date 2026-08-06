@@ -33,9 +33,21 @@ export default function Header() {
 
         {/* Right side icons */}
         <View style={styles.iconGroup}>
-          <Appbar.Action icon="magnify" color="#fff" onPress={() => console.log("Search tapped")} />
-          <Appbar.Action icon="bell" color="#fff" onPress={() => console.log("Notifications tapped")} />
-          <Appbar.Action icon="power" color="#fff" onPress={handleLogout} />
+          <Appbar.Action
+            icon="wallet"
+            color="#fff"
+            onPress={() => router.push("/wallet")}
+          />
+          <Appbar.Action
+            icon="bell"
+            color="#fff"
+            onPress={() => console.log("Notifications tapped")}
+          />
+          <Appbar.Action
+            icon="power"
+            color="#fff"
+            onPress={handleLogout}
+          />
         </View>
       </Appbar.Header>
 
@@ -54,15 +66,22 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: "#006d3a",
     flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 10,
+     justifyContent: "space-between",
+     alignItems: "center",
+     paddingHorizontal: 10,
   },
   iconGroup: {
-    flexDirection: "row",
-    alignItems: "center",
+     flexDirection: "row",
+     alignItems: "center",
+     
+  },
+  // reduce spacing between icons
+  iconGroupSpacing: {
+    marginHorizontal: -3,
+     gap: -3 // tighter spacing
   },
 });
+
 
 
 

@@ -1,8 +1,8 @@
-import React, { useState } from "react";
-import { StyleSheet, View, ImageBackground, Text, Image, TouchableOpacity } from "react-native";
+ import React, { useState } from "react";
+  import { StyleSheet,View, ImageBackground, Text, Image, TouchableOpacity } from "react-native";
 import { TextInput, Button, Card } from "react-native-paper";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../app/helpers/firebaseConfig";
+ import { signInWithEmailAndPassword } from "firebase/auth";
+ import { auth } from "../app/helpers/firebaseConfig";
 import { useRouter } from "expo-router";
 
 // ✅ Import your existing Nammagram logo
@@ -30,7 +30,7 @@ export default function LoginScreen() {
 
   return (
     <ImageBackground
-      source={LoginBackground}
+       source={LoginBackground}
       style={styles.background}
     >
       {/* Logo + Title outside card */}

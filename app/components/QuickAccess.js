@@ -10,7 +10,7 @@ export default function QuickAccess() {
   const shortcuts = [
     { id: 1, label: "Jobs", icon: "briefcase-outline", route: "/business" },
     { id: 2, label: "Posts", icon: "post-outline", route: "/business" },
-    { id: 3, label: "Transactions", icon: "cash-multiple", route: "/business/transactions" },
+    { id: 3, label: "Transactions", icon: "cash-multiple", route: "/wallet" },
     { id: 4, label: "Profile", icon: "account-outline", route: "/profile" },
   ];
 

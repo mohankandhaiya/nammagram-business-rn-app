@@ -18,7 +18,7 @@ export default function HomeScreen(navigation) {
   const [jobs, setJobs] = useState([]);
 const[modalVisible,setModalVisible] = useState([]);
 const[selectedJob,setSelectedJob] = useState([]);
-const TEST_USER_ID = "testUser123";
+ const TEST_USER_ID = "testUser123";
 const ads = [
   {
     image: "https://copilot.microsoft.com/th/id/BCO.abe40cde-0962-4d10-a875-0560901d162d.png",

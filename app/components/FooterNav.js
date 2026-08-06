@@ -7,11 +7,12 @@ export default function FooterNav() {
   const router = useRouter();
   const pathname = usePathname();
 
+  // ✅ Updated tabs: removed Wallet, added Dashboard in center
   const tabs = [
     { path: "/home", label: "Home", icon: "home" },
     { path: "/business", label: "Business", icon: "office-building" },
+    { path: "/Dashboard", label: "Dashboard", icon: "view-dashboard" }, // center tab
     { path: "/orders", label: "Orders", icon: "clipboard-list" },
-    { path: "/wallet", label: "Wallet", icon: "wallet" },
     { path: "/profile", label: "Profile", icon: "account" },
   ];
 
@@ -30,7 +31,7 @@ export default function FooterNav() {
           >
             <MaterialCommunityIcons
               name={tab.icon}
-              size={24}
+              size={26}
               color={isActive ? "#ffcc00" : "#ffffff"}
             />
             <Text style={[styles.label, isActive && styles.activeLabel]}>
@@ -46,7 +47,7 @@ export default function FooterNav() {
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
-    justifyContent: "space-around",
+    justifyContent: "space-around", // ✅ evenly distributes tabs
     alignItems: "center",
     backgroundColor: "#006d3a",
     paddingVertical: 20,
@@ -58,6 +59,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 });
+
 
 
 
