@@ -10,6 +10,7 @@ import {
   updateDoc,
   doc,setDoc
 } from "firebase/firestore";
+import JobDetailModal from "../components/JobDetailModal";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 export default function JobsTab({ jobs, setJobs, jobDialogVisible, setJobDialogVisible }) {
@@ -24,6 +25,8 @@ export default function JobsTab({ jobs, setJobs, jobDialogVisible, setJobDialogV
   const [newSalary, setNewSalary] = useState("");
   const [newTags, setNewTags] = useState("");
   const [editJobId, setEditJobId] = useState(null);
+   const [selectedJob, setSelectedJob] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
 const TEST_USER_ID = "testUser123";
   // 🔄 Real-time listener
   useEffect(() => {
@@ -133,78 +136,99 @@ const handleSaveJob = async (job) => {
     console.error("Error saving job:", error);
   }
 };
+ const openJobDetail = (job) => {
+    setSelectedJob(job);
+    setModalVisible(true);
+  };
+
+  const closeJobDetail = () => {
+    setSelectedJob(null);
+    setModalVisible(false);
+  };
  return (
   <View style={{ flex: 1 }}>
     {/* <Text style={styles.cardTitle}>Jobs Posted</Text> */}
-
-    {Array.isArray(jobs) && jobs.length > 0 ? (
-      jobs.map((job) => (
-        <View key={job.id} style={styles.jobCard}>
-          {/* Top row: role + edit/delete */}
-          <View style={styles.topRow}>
-            <Text style={styles.jobRole}>{job.role}</Text>
-            <View style={styles.topRightIcons}>
-              <TouchableOpacity onPress={() => openEditDialog(job)}>
-                <Icon name="pencil" size={20} color="#006d3a" style={styles.smallIcon} />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => deleteJob(job.id)}>
-                <Icon name="delete" size={20} color="#cc0000" style={styles.smallIcon} />
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* Company */}
-          <Text style={styles.jobCompany}>{job.company}</Text>
-
-          {/* Tags */}
-          <View style={styles.tagRow}>
-            {Array.isArray(job.tags) && job.tags.map((tag, idx) => (
-              <Text key={idx} style={styles.tag}>{tag}</Text>
-            ))}
-          </View>
-
-          {/* Location + Experience */}
-          <View style={styles.row}>
-            <View style={styles.rowItem}>
-              <Icon name="map-marker" size={16} color="#006d3a" />
-              <Text style={styles.jobDetail}>{job.location}</Text>
-            </View>
-            <View style={styles.rowItem}>
-              <Icon name="briefcase" size={16} color="#006d3a" />
-              <Text style={styles.jobDetail}>{job.experience}</Text>
-            </View>
-          </View>
-
-          {/* Salary */}
-          <View style={styles.rowItem}>
-            <Icon name="currency-inr" size={16} color="#006d3a"/>
-            <Text style={styles.jobDetail}>{job.salary}</Text>
-          </View>
-
-          {/* Posted time */}
-          {job.posted && (
-            <Text style={styles.postedTime}>{formatPosted(job.posted)}</Text>
-          )}
-           {/* Bottom row: Save icon */}
-      <View style={styles.bottomRow}>
-  <TouchableOpacity
-    onPress={() => handleSaveJob(job)}
-    style={styles.saveButton}
-  >
-    <Icon
-      name={job.saved ? "bookmark" : "bookmark-outline"}
-      size={22}
-      color="#006d3a"
-    />
-  </TouchableOpacity>
-</View>
-
+<>
+   {Array.isArray(jobs) && jobs.length > 0 ? (
+  jobs.map((job) => (
+    <TouchableOpacity
+      key={job.id}
+      style={styles.jobCard}
+      activeOpacity={0.9}
+      onPress={() => openJobDetail(job)} // ✅ open modal when card tapped
+    >
+      {/* Top row: role + edit/delete */}
+      <View style={styles.topRow}>
+        <Text style={styles.jobRole}>{job.role}</Text>
+        <View style={styles.topRightIcons}>
+          <TouchableOpacity onPress={() => openEditDialog(job)}>
+            <Icon name="pencil" size={20} color="#006d3a" style={styles.smallIcon} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => deleteJob(job.id)}>
+            <Icon name="delete" size={20} color="#cc0000" style={styles.smallIcon} />
+          </TouchableOpacity>
         </View>
-      ))
-    ) : (
-      <Text style={{ color: "#777", marginTop: 12 }}>No jobs available</Text>
-    )}
+      </View>
 
+      {/* Company */}
+      <Text style={styles.jobCompany}>{job.company}</Text>
+
+      {/* Tags */}
+      <View style={styles.tagRow}>
+        {Array.isArray(job.tags) &&
+          job.tags.map((tag, idx) => (
+            <Text key={idx} style={styles.tag}>
+              {tag}
+            </Text>
+          ))}
+      </View>
+
+      {/* Location + Experience */}
+      <View style={styles.row}>
+        <View style={styles.rowItem}>
+          <Icon name="map-marker" size={16} color="#006d3a" />
+          <Text style={styles.jobDetail}>{job.location}</Text>
+        </View>
+        <View style={styles.rowItem}>
+          <Icon name="briefcase" size={16} color="#006d3a" />
+          <Text style={styles.jobDetail}>{job.experience}</Text>
+        </View>
+      </View>
+
+      {/* Salary */}
+      <View style={styles.rowItem}>
+        <Icon name="currency-inr" size={16} color="#006d3a" />
+        <Text style={styles.jobDetail}>{job.salary}</Text>
+      </View>
+
+      {/* Posted time */}
+      {job.posted && (
+        <Text style={styles.postedTime}>{formatPosted(job.posted)}</Text>
+      )}
+
+      {/* Bottom row: Save icon */}
+      {/* <View style={styles.bottomRow}>
+        <TouchableOpacity onPress={() => handleSaveJob(job)} style={styles.saveButton}>
+          <Icon
+            name={job.saved ? "bookmark" : "bookmark-outline"}
+            size={22}
+            color="#006d3a"
+          />
+        </TouchableOpacity>
+      </View> */}
+    </TouchableOpacity>
+  ))
+) : (
+  <Text style={{ color: "#777", marginTop: 12 }}>No jobs available</Text>
+)}
+
+ {/* ✅ Job Detail Modal */}
+      <JobDetailModal
+        visible={modalVisible}
+        job={selectedJob}
+        onClose={closeJobDetail}
+      />
+    </>
     {/* Add Job Dialog controlled by props */}
     <Modal visible={jobDialogVisible} transparent animationType="slide">
       <View style={styles.dialogOverlay}>
@@ -301,12 +325,15 @@ const styles = StyleSheet.create({
     marginBottom: 6 
   },
   tag: { 
-    backgroundColor: "#e0e0e0", 
-    borderRadius: 4, 
+    // backgroundColor: "#e0e0e0", 
+     backgroundColor: "#dfece0",
+     fontWeight: "600",
+    borderRadius: 12, 
     paddingHorizontal: 8, 
     paddingVertical: 3, 
     marginRight: 6, 
-    fontSize: 12 
+    fontSize: 12, 
+     color: "#006d3a",
   },
   row: { 
     flexDirection: "row", 
@@ -329,7 +356,9 @@ const styles = StyleSheet.create({
     marginTop: 6 
   },
   topRightIcons: { 
-    flexDirection: "row" 
+    flexDirection: "row" ,
+  
+  
   },
   smallIcon: { 
     marginLeft: 6 

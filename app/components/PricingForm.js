@@ -1,73 +1,141 @@
-// app/business/PricingForm.js
-import React, { useState } from "react";
-import { View, Text, TextInput, StyleSheet, TouchableOpacity } from "react-native";
+// app/components/PricingForm.js
+import React, { useState, useEffect } from "react";
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Modal, FlatList } from "react-native";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
-export default function PricingForm() {
+export default function PricingForm({ onPricingChange }) {
   const [salePrice, setSalePrice] = useState("");
   const [discount, setDiscount] = useState("");
   const [purchasePrice, setPurchasePrice] = useState("");
-  const [taxRate, setTaxRate] = useState("");
+
+  const [salePriceType, setSalePriceType] = useState("Without Tax");
+  const [saleDropdownVisible, setSaleDropdownVisible] = useState(false);
+
+  const [discountType, setDiscountType] = useState("Percentage");
+  const [discountDropdownVisible, setDiscountDropdownVisible] = useState(false);
+
+  const [purchasePriceType, setPurchasePriceType] = useState("Without Tax");
+  const [purchaseDropdownVisible, setPurchaseDropdownVisible] = useState(false);
+
+  const [taxRate, setTaxRate] = useState("None");
+  const [taxDropdownVisible, setTaxDropdownVisible] = useState(false);
+
+  const priceOptions = ["Without Tax", "With Tax"];
+  const discountOptions = ["Percentage", "Amount"];
+  const taxOptions = [
+    "None — 0.0","Exempted — 0.0","GST@0% — 0.0","IGST@0% — 0.0",
+    "GST@0.25% — 0.25","IGST@0.25% — 0.25","GST@3% — 3.0","IGST@3% — 3.0",
+    "GST@5% — 5.0","IGST@5% — 5.0","GST@12% — 12.0","IGST@12% — 12.0",
+  ];
+
+  // Whenever state changes, notify parent
+  useEffect(() => {
+    onPricingChange({
+      salePrice,
+      salePriceType,
+      discount,
+      discountType,
+      purchasePrice,
+      purchasePriceType,
+      taxRate,
+    });
+  }, [salePrice, salePriceType, discount, discountType, purchasePrice, purchasePriceType, taxRate]);
 
   return (
     <View style={styles.container}>
-       <Text style={styles.sectionTitle}>Pricing</Text> 
-
       {/* Sale Price */}
-      <TextInput
-        style={styles.input}
-        placeholder="Sale Price"
-        value={salePrice}
-        onChangeText={setSalePrice}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Disc. On Sale Price (%)"
-        value={discount}
-        onChangeText={setDiscount}
-      />
-
-      {/* Add Wholesale Price */}
-      <TouchableOpacity>
-        <Text style={styles.linkText}>+ Add Wholesale Price 👑</Text>
+      <Text style={styles.sectionTitle}>Sale Price</Text>
+      <TouchableOpacity style={styles.inputRowFull} onPress={() => setSaleDropdownVisible(true)} activeOpacity={0.7}>
+        <TextInput
+          style={[styles.input, { flex: 1 }]}
+          placeholder="Sale Price"
+          value={salePrice}
+          onChangeText={setSalePrice}
+          keyboardType="numeric"
+        />
+        <Text style={styles.dropdownText}>{salePriceType}</Text>
+        <Icon name="chevron-down" size={20} color="#666" style={styles.dropdownIcon} />
       </TouchableOpacity>
+      <DropdownModal visible={saleDropdownVisible} options={priceOptions} onClose={() => setSaleDropdownVisible(false)} onSelect={setSalePriceType} />
+
+      {/* Discount */}
+      <TouchableOpacity style={styles.inputRowFull} onPress={() => setDiscountDropdownVisible(true)} activeOpacity={0.7}>
+        <TextInput
+          style={[styles.input, { flex: 1 }]}
+          placeholder="Disc. On Sale Price"
+          value={discount}
+          onChangeText={setDiscount}
+          keyboardType="numeric"
+        />
+        <Text style={styles.dropdownText}>{discountType}</Text>
+        <Icon name="chevron-down" size={20} color="#666" style={styles.dropdownIcon} />
+      </TouchableOpacity>
+      <DropdownModal visible={discountDropdownVisible} options={discountOptions} onClose={() => setDiscountDropdownVisible(false)} onSelect={setDiscountType} />
 
       {/* Purchase Price */}
-      <TextInput
-        style={styles.input}
-        placeholder="Purchase Price"
-        value={purchasePrice}
-        onChangeText={setPurchasePrice}
-      />
+      <Text style={styles.sectionTitle}>Purchase Price</Text>
+      <TouchableOpacity style={styles.inputRowFull} onPress={() => setPurchaseDropdownVisible(true)} activeOpacity={0.7}>
+        <TextInput
+          style={[styles.input, { flex: 1 }]}
+          placeholder="Purchase Price"
+          value={purchasePrice}
+          onChangeText={setPurchasePrice}
+          keyboardType="numeric"
+        />
+        <Text style={styles.dropdownText}>{purchasePriceType}</Text>
+        <Icon name="chevron-down" size={20} color="#666" style={styles.dropdownIcon} />
+      </TouchableOpacity>
+      <DropdownModal visible={purchaseDropdownVisible} options={priceOptions} onClose={() => setPurchaseDropdownVisible(false)} onSelect={setPurchasePriceType} />
 
       {/* Taxes */}
-      <TextInput
-        style={styles.input}
-        placeholder="Tax Rate"
-        value={taxRate}
-        onChangeText={setTaxRate}
-      />
+      <Text style={styles.sectionTitle}>Taxes</Text>
+      <TouchableOpacity style={styles.inputRowFull} onPress={() => setTaxDropdownVisible(true)} activeOpacity={0.7}>
+        <Text style={{ flex: 1, color: taxRate !== "None" ? "#000" : "#999" }}>{taxRate}</Text>
+        <Icon name="chevron-down" size={20} color="#666" style={styles.dropdownIcon} />
+      </TouchableOpacity>
+      <DropdownModal visible={taxDropdownVisible} options={taxOptions} onClose={() => setTaxDropdownVisible(false)} onSelect={setTaxRate} />
     </View>
+  );
+}
+
+function DropdownModal({ visible, options, onClose, onSelect }) {
+  return (
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+      <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPressOut={onClose}>
+        <View style={styles.dropdownContainer}>
+          <FlatList
+            data={options}
+            keyExtractor={(item, idx) => idx.toString()}
+            renderItem={({ item }) => (
+              <TouchableOpacity style={styles.dropdownItem} onPress={() => { onSelect(item); onClose(); }}>
+                <Text style={styles.dropdownItemText}>{item}</Text>
+              </TouchableOpacity>
+            )}
+          />
+        </View>
+      </TouchableOpacity>
+    </Modal>
   );
 }
 
 const styles = StyleSheet.create({
   container: { marginBottom: 20 },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#006d3a",
-    marginBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ccc",
-    paddingBottom: 4,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 6,
-    padding: 10,
-    marginBottom: 12,
-    backgroundColor: "#fff",
-  },
-  linkText: { color: "#006d3a", fontWeight: "600", marginBottom: 12 },
+  sectionTitle: { fontSize: 16, fontWeight: "bold", color: "#006d3a", marginBottom: 8 },
+  inputRowFull: { flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: "#ccc", borderRadius: 6, backgroundColor: "#fff", paddingHorizontal: 12, marginBottom: 12, minHeight: 44 },
+  input: { paddingVertical: 10, paddingHorizontal: 8, backgroundColor: "#fff" },
+  dropdownText: { marginLeft: 8, color: "#333" },
+  dropdownIcon: { marginLeft: 6 },
+  divider: { borderBottomWidth: 1, borderBottomColor: "#ccc", marginVertical: 12 },
+  modalOverlay: { flex: 1, justifyContent: "center", backgroundColor: "rgba(0,0,0,0.3)" },
+  dropdownContainer: { marginHorizontal: 40, backgroundColor: "#fff", borderRadius: 6, paddingVertical: 8 },
+  dropdownItem: { paddingVertical: 12, paddingHorizontal: 16 },
+  dropdownItemText: { fontSize: 14, color: "#333" },
 });
+
+
+
+
+
+
+
+

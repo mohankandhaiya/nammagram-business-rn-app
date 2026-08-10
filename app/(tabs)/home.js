@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, } from "react";
 import { StyleSheet, View, Text, ScrollView, ImageBackground, Image, TouchableOpacity } from "react-native";
 import { Avatar, } from "react-native-paper";
 import { Share } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons"; // ✅ MaterialDesignIcons
 import Header from "../../app/components/Header";
+
 import FooterNav from "../../app/components/FooterNav";
 import { collection, onSnapshot, query, orderBy, doc, updateDoc, arrayUnion, serverTimestamp,deleteDoc,setDoc,getDocs} from "firebase/firestore";
 import { db } from "../../app/helpers/firebaseConfig";
@@ -18,6 +19,8 @@ export default function HomeScreen(navigation) {
   const [jobs, setJobs] = useState([]);
 const[modalVisible,setModalVisible] = useState([]);
 const[selectedJob,setSelectedJob] = useState([]);
+// const drawerRef = useRef(null);
+//   const [active, setActive] = useState("home");
  const TEST_USER_ID = "testUser123";
 const ads = [
   {
@@ -189,13 +192,13 @@ const handleSaveJob = async (job) => {
   }
 };
   return (
-    
+     
     <ImageBackground
       source={require("../../app/assets/home_bg.png")}
       style={styles.background}
     >
-      <Header />
-
+      {/* <Header /> */}
+ <Header  />
       <ScrollView contentContainerStyle={styles.content}>
          {/* Add Section at the top */}
       <AddSection ads={ads} />
@@ -285,108 +288,99 @@ const handleSaveJob = async (job) => {
 
           {/* Jobs Section */}
         {/* Jobs Section */}
+{/* Jobs Section */}
 <View style={styles.sectionHeader}>
   <Text style={styles.sectionTitle}>Jobs</Text>
-  {/* <Text style={styles.link}>See All &gt;</Text> */}
 </View>
 
 {jobs.length === 0 ? (
   <Text style={{ textAlign: "center", color: "#666" }}>No jobs available</Text>
 ) : (
- jobs.map((job) => (
-  <View key={job.id} style={styles.jobCard}>
-    <View style={styles.jobContent}>
-      {/* Line 1: Role */}
-      <View style={styles.jobRow}>
-        <Icon name="account-tie" size={18} color="#006d3a" />
-        <Text style={styles.jobTitle}>{job.role}</Text>
-      </View>
-
-      {/* Line 2: Company */}
-      <View style={styles.jobRow}>
-        <Icon name="office-building" size={18} color="#006d3a" />
-        <Text style={styles.jobDetails}>{job.company}</Text>
-      </View>
-
-      {/* Line 3: Experience + Salary */}
-      <View style={styles.jobRow}>
-        <View style={styles.inlineItem}>
-          <Icon name="school" size={18} color="#006d3a" />
-          <Text style={styles.jobDetails}>{job.experience}</Text>
-        </View>
-        <View style={styles.inlineItem}>
-          <Icon name="currency-inr" size={18} color="#006d3a" />
-          <Text style={styles.jobDetails}>{job.salary}</Text>
-        </View>
-      </View>
-
-      {/* Line 4: Status + Applicants */}
-      <View style={styles.jobRow}>
-        <View style={styles.inlineItem}>
-          <Icon
-            name="check-circle"
-            size={18}
-            color={job.status === "Open" ? "#006d3a" : "#cc0000"}
-          />
-          <Text style={styles.jobDetails}>{job.status}</Text>
-        </View>
-        <View style={styles.inlineItem}>
-          <Icon name="account-group" size={18} color="#006d3a" />
-          <Text style={styles.jobDetails}>{job.applicants}</Text>
-        </View>
-      </View>
-
-      {/* Tags */}
-      <View style={styles.tagContainer}>
-        {job.tags?.map((tag, index) => (
-          <View key={index} style={styles.tag}>
-            <Icon name="tag" size={14} color="#006d3a" />
-            <Text style={styles.tagText}>{tag}</Text>
+  jobs.map((job) => (
+    <TouchableOpacity
+      key={job.id}
+      style={styles.jobCard}
+      activeOpacity={0.9}
+      onPress={() => {
+        setSelectedJob(job);
+        setModalVisible(true);
+      }}
+    >
+      <View style={styles.jobContent}>
+        {/* Top row: Role + Save icon */}
+        <View style={styles.jobRowTop}>
+          <View style={styles.inlineItem}>
+            <Icon name="account-tie" size={18} color="#006d3a" />
+            <Text style={styles.jobTitle}>{job.role}</Text>
           </View>
-          
-        ))}
-      </View>
-      <View style= {styles.saveButton}>
-         <TouchableOpacity
-          onPress={() => handleSaveJob(job)}
-          style={styles.saveButton}
-        >
-          <Icon
-            name={job.saved ? "bookmark" : "bookmark-outline"}
-            size={22}
-            color="#006d3a"
-          />
-        </TouchableOpacity>
+          <TouchableOpacity onPress={() => handleSaveJob(job)}>
+            <Icon
+              name={job.saved ? "bookmark" : "bookmark-outline"}
+              size={22}
+              color="#006d3a"
+            />
+          </TouchableOpacity>
         </View>
-    </View>
 
-   {/* View Button */}
-      <TouchableOpacity
-        style={styles.viewButton}
-        onPress={() => {
-          setSelectedJob(job);
-          setModalVisible(true);
-        }}
-      >
-        <Text style={styles.viewButtonText}>View</Text>
-      </TouchableOpacity>
-      
-  </View>
+        {/* Company */}
+        <View style={styles.jobRow}>
+          <Icon name="office-building" size={18} color="#006d3a" />
+          <Text style={styles.jobDetails}>{job.company}</Text>
+        </View>
 
+        {/* Experience + Salary */}
+        <View style={styles.jobRow}>
+          <View style={styles.inlineItem}>
+            <Icon name="school" size={18} color="#006d3a" />
+            <Text style={styles.jobDetails}>{job.experience}</Text>
+          </View>
+          <View style={styles.inlineItem}>
+            <Icon name="currency-inr" size={18} color="#006d3a" />
+            <Text style={styles.jobDetails}>{job.salary}</Text>
+          </View>
+        </View>
 
+        {/* Status + Applicants */}
+        <View style={styles.jobRow}>
+          <View style={styles.inlineItem}>
+            <Icon
+              name="check-circle"
+              size={18}
+              color={job.status === "Open" ? "#006d3a" : "#cc0000"}
+            />
+            <Text style={styles.jobDetails}>{job.status}</Text>
+          </View>
+          <View style={styles.inlineItem}>
+            <Icon name="account-group" size={18} color="#006d3a" />
+            <Text style={styles.jobDetails}>{job.applicants}</Text>
+          </View>
+        </View>
+
+        {/* Tags */}
+        <View style={styles.tagContainer}>
+          {job.tags?.map((tag, index) => (
+            <View key={index} style={styles.tag}>
+              <Icon name="tag" size={14} color="#006d3a" />
+              <Text style={styles.tagText}>{tag}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
+    </TouchableOpacity>
   ))
-  
 )}
+
+{/* Job Detail Modal */}
 <JobDetailModal
   visible={modalVisible}
   job={selectedJob}
   onClose={() => setModalVisible(false)}
-/> 
-        </View>
-      </ScrollView>
+/>
 
-      <FooterNav />
-    </ImageBackground>
+        </View>  
+      </ScrollView>
+      <FooterNav />     
+    </ImageBackground>  
   );
 }
 
@@ -486,6 +480,13 @@ saveButton: {
      marginRight: 19,
     // justifyContent: "flex-end"
 },
+jobRowTop: {
+  flexDirection: "row",
+  justifyContent: "space-between", // ✅ role left, save icon right
+  alignItems: "center",
+  marginBottom: 6,
+},
+
 });
 
 

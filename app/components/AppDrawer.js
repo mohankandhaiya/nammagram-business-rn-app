@@ -1,9 +1,10 @@
 import React from "react";
-import { StyleSheet, View, Modal, TouchableOpacity, Image } from "react-native";
-import { Drawer } from "react-native-paper";
+import { StyleSheet, View, Modal, TouchableOpacity, Image, Text } from "react-native";
 import { useRouter } from "expo-router";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import NammagramLogo from "../assets/ng-logo.png";
+import { signOut } from "firebase/auth";
+import { auth } from "../../app/helpers/firebaseConfig";
 
 export default function AppDrawer({ visible = false, onClose, active, setActive }) {
   const router = useRouter();
@@ -15,8 +16,18 @@ export default function AppDrawer({ visible = false, onClose, active, setActive 
     { label: "Business", route: "/business", icon: "office-building" },
     { label: "Orders", route: "/orders", icon: "clipboard-list" },
     { label: "Profile", route: "/profile", icon: "account" },
-    { label: "Logout", route: "/Login", icon: "power" },
   ];
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      alert("Logged out successfully!");
+      router.replace("/Login");
+      onClose();
+    } catch (error) {
+      alert(error.message);
+    }
+  };
 
   return (
     <Modal visible={visible} transparent animationType="slide">
@@ -32,36 +43,39 @@ export default function AppDrawer({ visible = false, onClose, active, setActive 
             <Image source={NammagramLogo} style={styles.logo} resizeMode="contain" />
           </View>
 
-          {/* Drawer Items (no title, no divider) */}
-          <Drawer.Section style={styles.drawer} showDivider={false}>
+          {/* Drawer Items */}
+          <View style={styles.drawerList}>
             {drawerItems.map((item) => {
               const isActive = active === item.label.toLowerCase();
               return (
-                <Drawer.Item
+                <TouchableOpacity
                   key={item.label}
-                  label={item.label}
-                  icon={({ size }) => (
-                    <MaterialCommunityIcons
-                      name={item.icon}
-                      size={size}
-                      color={isActive ? "#fff" : "#006d3a"} // ✅ icon turns white when active
-                    />
-                  )}
-                  labelStyle={{
-                    color: isActive ? "#fff" : "#006d3a", // ✅ text turns white when active
-                    fontWeight: "600",
-                  }}
                   style={[styles.drawerItem, isActive && styles.activeItem]}
-                  active={isActive}
                   onPress={() => {
                     setActive(item.label.toLowerCase());
                     router.replace(item.route);
                     onClose();
                   }}
-                />
+                >
+                  <MaterialCommunityIcons
+                    name={item.icon}
+                    size={22}
+                    color={isActive ? "#fff" : "#006d3a"}
+                    style={styles.icon}
+                  />
+                  <Text style={[styles.label, isActive && styles.activeLabel]}>
+                    {item.label}
+                  </Text>
+                </TouchableOpacity>
               );
             })}
-          </Drawer.Section>
+          </View>
+
+          {/* Full-width Logout Footer */}
+          <TouchableOpacity style={styles.logoutFooter} onPress={handleLogout}>
+            <MaterialCommunityIcons name="power" size={22} color="#fff" style={styles.icon} />
+            <Text style={styles.logoutLabel}>Logout</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </Modal>
@@ -80,26 +94,41 @@ const styles = StyleSheet.create({
     width: 240,
     height: "100%",
     backgroundColor: "#fff",
-    paddingTop: 8,
+    paddingTop: 7,
     paddingHorizontal: 10,
+    justifyContent: "space-between", // ✅ ensures footer stays at bottom
   },
-  drawer: {
-    backgroundColor: "transparent",
-  },
-  drawerItem: {
-    borderRadius: 6,
-    marginVertical: 2,
-  },
-  activeItem: {
-    backgroundColor: "#006d3a", // ✅ green background highlight
-  },
-  closeButton: {
-    alignSelf: "flex-end",
-    marginBottom: 20,
-  },
+  closeButton: { alignSelf: "flex-end" },
   header: { alignItems: "center" },
-  logo: { width: 150, height: 90 },
+  logo: { width: 150, height: 100 },
+  drawerList: { flexGrow: 1 },
+  drawerItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 11,
+    paddingHorizontal: 10,
+    borderRadius: 6,
+    marginBottom: 1,
+  },
+  activeItem: { backgroundColor: "#006d3a" },
+  icon: { marginRight: 12 },
+  label: { fontSize: 15, color: "#006d3a", fontWeight: "600" },
+  activeLabel: { color: "#fff" },
+  logoutFooter: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center", // ✅ center text + icon
+    backgroundColor: "#006d3a",
+    paddingVertical: 14,
+     borderRadius: 6,
+    marginBottom: 40,
+  },
+  logoutLabel: { fontSize: 16, color: "#fff", fontWeight: "700" },
 });
+
+
+
+
 
 
 

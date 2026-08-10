@@ -3,17 +3,64 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 
 import { useRouter } from "expo-router";
 import PricingForm from "../components/PricingForm";
 import StockForm from "../components/StockForm";
-
+import CategoryModal from "../components/CategoryModal";
+import { useLocalSearchParams } from "expo-router";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons"; 
+import { collection, addDoc } from "firebase/firestore";
+import { db } from "../helpers/firebaseConfig"; // adjust path
 export default function AddItem() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("product"); // product | service
   const [activeSubTab, setActiveSubTab] = useState("pricing"); // pricing | stock
-
+ const [pricingData, setPricingData] = useState({});
   const [itemName, setItemName] = useState("");
   const [itemCode, setItemCode] = useState("");
   const [itemCategory, setItemCategory] = useState("");
   const [hsnCode, setHsnCode] = useState("");
 
+    // Category modal state
+  const [categoryModalVisible, setCategoryModalVisible] = useState(false);
+  const [categories, setCategories] = useState(["RO Water", "Electronics", "Groceries"]);
+
+  const handleAddCategory = () => {
+    const newCat = `Category ${categories.length + 1}`;
+    setCategories([...categories, newCat]);
+  };
+const params = useLocalSearchParams();
+
+React.useEffect(() => {
+  if (params.categories) {
+    try {
+      const parsed = JSON.parse(params.categories); // array of categories
+      setItemCategory(parsed.join(", ")); // show them in the input as comma-separated
+      // Optionally merge into categories list
+      const newCats = parsed.filter(c => !categories.includes(c));
+      if (newCats.length > 0) {
+        setCategories([...categories, ...newCats]);
+      }
+    } catch (e) {
+      console.error("Failed to parse categories:", e);
+    }
+  }
+}, [params.categories]);
+ const handleSaveItem = async () => {
+    try {
+      await addDoc(collection(db, "products"), {
+        itemName,
+        itemCode,
+        itemCategory,
+        hsnCode,
+        pricing: pricingData, // collected from PricingForm
+        createdAt: new Date(),
+      });
+      alert("Item saved successfully!");
+      // router.back();
+      router.push("/ProductList");
+    } catch (error) {
+      console.error("Error saving item:", error);
+      alert("Failed to save item.");
+    }
+  };
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -56,25 +103,41 @@ export default function AddItem() {
                 <Text style={styles.roundButtonText}>Unit</Text>
               </TouchableOpacity>
             </View>
+<View style={styles.inputRow}>
+  <TextInput
+    style={[styles.input, { flex: 1 }]}
+    placeholder="Item Code / Barcode"
+    value={itemCode}
+    onChangeText={setItemCode}
+  />
+  <TouchableOpacity
+    style={styles.roundButton}
+    onPress={() => {
+      // Generate random 11-digit number
+      const randomCode = Math.floor(10000000000 + Math.random() * 90000000000).toString();
+      setItemCode(randomCode);
+    }}
+  >
+    <Text style={styles.roundButtonText}>Assign</Text>
+  </TouchableOpacity>
+</View>
 
-            <View style={styles.inputRow}>
-              <TextInput
-                style={[styles.input, { flex: 1 }]}
-                placeholder="Item Code / Barcode"
-                value={itemCode}
-                onChangeText={setItemCode}
-              />
-              <TouchableOpacity style={styles.roundButton}>
-                <Text style={styles.roundButtonText}>Assign</Text>
-              </TouchableOpacity>
-            </View>
+            {/* Item Category input + button */}
+{/* Item Category input (tappable with dropdown icon) */}
+<View style={styles.inputRow}>
+  <TouchableOpacity
+    style={[styles.input, styles.categoryInput]}
+    onPress={() => router.push("/AddCategory")}
+    activeOpacity={0.7}
+  >
+    <Text style={{ color: itemCategory ? "#000" : "#999" }}>
+      {itemCategory || "Item Category"}
+    </Text>
+    <Icon name="chevron-down" size={20} color="#666" style={styles.dropdownIcon} />
+  </TouchableOpacity>
+</View>
 
-            <TextInput
-              style={styles.input}
-              placeholder="Item Category"
-              value={itemCategory}
-              onChangeText={setItemCategory}
-            />
+
 
             <View style={styles.inputRow}>
               <TextInput
@@ -109,7 +172,8 @@ export default function AddItem() {
             </View>
 
             {/* Show Pricing or Stock form */}
-            {activeSubTab === "pricing" && <PricingForm />}
+            {/* {activeSubTab === "pricing" && <PricingForm />} */}
+             {activeSubTab === "pricing" && <PricingForm onPricingChange={setPricingData} />}
             {activeSubTab === "stock" && <StockForm />}
           </>
         )}
@@ -144,10 +208,18 @@ export default function AddItem() {
         <TouchableOpacity style={[styles.button, styles.cancel]}>
           <Text style={styles.buttonText}>Cancel</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.button, styles.save]}>
+        <TouchableOpacity style={[styles.button, styles.save]} onPress={handleSaveItem}>
           <Text style={styles.buttonText}>Save</Text>
         </TouchableOpacity>
       </View>
+       {/* Category Modal */}
+      <CategoryModal
+        visible={categoryModalVisible}
+        onClose={() => setCategoryModalVisible(false)}
+        categories={categories}
+        onAddCategory={handleAddCategory}
+        onSelectCategory={setItemCategory}
+      />
     </View>
   );
 }
@@ -194,42 +266,42 @@ const styles = StyleSheet.create({
   subTabText: { fontSize: 16, fontWeight: "600", color: "#333" },
   activeSubTabText: { color: "#fff" },
 
-  input: {
+   input: {
+    flex: 1,
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 6,
-    padding: 10,
-    marginBottom: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
     backgroundColor: "#fff",
   },
   inputRow: { flexDirection: "row", alignItems: "center", marginBottom: 12 },
   roundButton: {
     marginLeft: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 7,
     backgroundColor: "#006d3a",
     justifyContent: "center",
     alignItems: "center",
   },
   roundButtonText: { color: "#fff", fontWeight: "bold", fontSize: 12 },
 
-  stickyButtonRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: "#ccc",
-    backgroundColor: "#fff",
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
+  stickyButtonRow: {flexDirection: "row",justifyContent: "space-between",padding: 16,borderTopWidth: 1,borderTopColor: "#ccc",  backgroundColor: "#fff",position: "absolute",bottom: 0,left: 0,right: 0,
   },
   button: { flex: 1, padding: 12, borderRadius: 6, alignItems: "center", marginHorizontal: 5 },
   cancel: { backgroundColor: "#cc0000" },
   save: { backgroundColor: "#006d3a" },
   buttonText: { color: "#fff", fontWeight: "bold" },
+   categoryInput: {
+    // width:"90%",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  dropdownIcon: {
+    marginLeft: 8,
+  },
 });
 
 

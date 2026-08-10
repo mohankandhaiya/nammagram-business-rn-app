@@ -1,95 +1,244 @@
 // app/business/AddItemUnit.js
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, ImageBackground, } from "react-native";
-import { Picker } from "@react-native-picker/picker";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
+import { Dialog, Portal, TextInput, Button, Provider } from "react-native-paper";
 
 export default function AddItemUnit() {
   const router = useRouter();
+
+  // Initial units
+  const [primaryUnits, setPrimaryUnits] = useState([
+    "KILOMETER (Kmt)",
+    "UNIT (Unit)",
+    "BOTTLES (Btl)",
+    "HOUR (Hur)",
+    "PIECES (Pcs)",
+  ]);
+  const [secondaryUnits, setSecondaryUnits] = useState([
+    "GRAM (g)",
+    "LITRE (Ltr)",
+    "PACK (Pkt)",
+    "BOX (Box)",
+    "METER (Mtr)",
+  ]);
+
   const [primaryUnit, setPrimaryUnit] = useState("");
   const [secondaryUnit, setSecondaryUnit] = useState("");
 
+  // Dialog state
+  const [dialogVisible, setDialogVisible] = useState(false);
+  const [targetType, setTargetType] = useState("primary"); // "primary" or "secondary"
+  const [newFull, setNewFull] = useState("");
+  const [newShort, setNewShort] = useState("");
+
   const handleSave = () => {
-    // Pass units back to AddItem via router params
     router.push({
       pathname: "/AddItem",
       params: { primaryUnit, secondaryUnit },
     });
   };
 
-  return (
-   
-    <SafeAreaView style={styles.safeArea}>
-  <View style={styles.header}>
-    <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-      <Icon name="arrow-back" size={24} color="#fff" />
-    </TouchableOpacity>
-    <Text style={styles.headerTitle}>Add Item Unit</Text>
-  </View>
-      <View style={styles.container}>
-        <Text style={styles.title}>Add Item Unit</Text>
+  const addUnit = () => {
+    if (newFull && newShort) {
+      const formatted = `${newFull.toUpperCase()} (${newShort})`;
+      if (targetType === "primary") {
+        setPrimaryUnits([...primaryUnits, formatted]);
+        setPrimaryUnit(formatted);
+      } else {
+        setSecondaryUnits([...secondaryUnits, formatted]);
+        setSecondaryUnit(formatted);
+      }
+      setNewFull("");
+      setNewShort("");
+      setDialogVisible(false);
+    }
+  };
 
-        <Text style={styles.label}>Primary Unit</Text>
-        <View style={styles.pickerWrapper}>
-          <Picker selectedValue={primaryUnit} onValueChange={setPrimaryUnit} style={styles.picker}>
-            <Picker.Item label="Select Primary Unit" value="" />
-            <Picker.Item label="Piece" value="piece" />
-            <Picker.Item label="Kg" value="kg" />
-            <Picker.Item label="Litre" value="litre" />
-            <Picker.Item label="Box" value="box" />
-          </Picker>
-        </View>
+  // Custom dropdown component
+  const Dropdown = ({ label, options, selected, setSelected, type }) => {
+    const [open, setOpen] = useState(false);
 
-        <Text style={styles.label}>Secondary Unit</Text>
-        <View style={styles.pickerWrapper}>
-          <Picker selectedValue={secondaryUnit} onValueChange={setSecondaryUnit} style={styles.picker}>
-            <Picker.Item label="Select Secondary Unit" value="" />
-            <Picker.Item label="Piece" value="piece" />
-            <Picker.Item label="Kg" value="kg" />
-            <Picker.Item label="Litre" value="litre" />
-            <Picker.Item label="Box" value="box" />
-          </Picker>
-        </View>
+    return (
+      <View style={styles.dropdownWrapper}>
+        <Text style={styles.label}>{label}</Text>
+        <TouchableOpacity
+          style={styles.dropdownHeader}
+          onPress={() => setOpen(!open)}
+        >
+          <Text style={styles.dropdownText}>
+            {selected || "Select Unit"}
+          </Text>
+          <Icon name={open ? "chevron-up" : "chevron-down"} size={20} color="#006d3a" />
+        </TouchableOpacity>
 
-        <View style={styles.buttonRow}>
-          <TouchableOpacity style={[styles.button, styles.cancel]} onPress={() => router.back()}>
-            <Text style={styles.buttonText}>Cancel</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.button, styles.save]} onPress={handleSave}>
-            <Text style={styles.buttonText}>Save</Text>
-          </TouchableOpacity>
-        </View>
+        {open && (
+          <View style={styles.dropdownList}>
+            {/* Add Unit button at top */}
+            <TouchableOpacity
+              style={styles.addUnitItem}
+              onPress={() => {
+                setTargetType(type);
+                setDialogVisible(true);
+                setOpen(false);
+              }}
+            >
+              <Text style={styles.addUnitText}>➕ Add Unit</Text>
+            </TouchableOpacity>
+
+            {options.map((opt, idx) => (
+              <TouchableOpacity
+                key={idx}
+                style={styles.dropdownItem}
+                onPress={() => {
+                  setSelected(opt);
+                  setOpen(false);
+                }}
+              >
+                <Text style={styles.dropdownText}>{opt}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
       </View>
+    );
+  };
+
+  return (
+    <Provider>
+      <SafeAreaView style={styles.safeArea}>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Icon name="arrow-back" size={24} color="#fff" />
+          </TouchableOpacity>
+           <Text style={styles.headerTitle}>Add Item Unit</Text> 
+        </View>
+
+        <View style={styles.container}>
+          {/* <Text style={styles.title}>Add Item Unit</Text> */}
+
+          {/* Primary Dropdown */}
+          <Dropdown
+            label="Primary Unit"
+            options={primaryUnits}
+            selected={primaryUnit}
+            setSelected={setPrimaryUnit}
+            type="primary"
+          />
+
+          {/* Secondary Dropdown */}
+          <Dropdown
+            label="Secondary Unit"
+            options={secondaryUnits}
+            selected={secondaryUnit}
+            setSelected={setSecondaryUnit}
+            type="secondary"
+          />
+
+          {/* Save/Cancel */}
+          <View style={styles.buttonRow}>
+            <Button
+              mode="contained"
+              color="#cc0000"
+              style={styles.flexBtn}
+              onPress={() => router.back()}
+            >
+              Cancel
+            </Button>
+            <Button
+              mode="contained"
+              color="#006d3a"
+              style={styles.flexBtn}
+              onPress={handleSave}
+            >
+              Save
+            </Button>
+          </View>
+        </View>
+
+        {/* Dialog */}
+        <Portal>
+          <Dialog
+            visible={dialogVisible}
+            onDismiss={() => setDialogVisible(false)}
+            style={styles.dialogBox}
+          >
+            <Dialog.Title style={{ color: "#006d3a" }}>Add New Unit</Dialog.Title>
+            <Dialog.Content>
+              <TextInput
+                label="Full name"
+                value={newFull}
+                onChangeText={setNewFull}
+                style={styles.input}
+              />
+              <TextInput
+                label="Shortname"
+                value={newShort}
+                onChangeText={setNewShort}
+                style={styles.input}
+              />
+              <Text style={styles.warningText}>This Unit cannot be deleted</Text>
+            </Dialog.Content>
+            <Dialog.Actions>
+              <Button onPress={() => setDialogVisible(false)} color="#cc0000">
+                Cancel
+              </Button>
+              <Button onPress={addUnit} color="#006d3a">
+                Save
+              </Button>
+            </Dialog.Actions>
+          </Dialog>
+        </Portal>
       </SafeAreaView>
-  
+    </Provider>
   );
 }
 
 const styles = StyleSheet.create({
-  // background: { flex: 1 },
-  container: { flex: 1, padding: 16,backgroundColor: "#fff" },
+  safeArea: { flex: 1, backgroundColor: "#006d3a" },
+  header: { flexDirection: "row", alignItems: "center", padding: 12 },
+  backButton: { marginRight: 12 },
+  headerTitle: { color: "#fff", fontSize: 18, fontWeight: "bold" },
+  container: { flex: 1, padding: 16, backgroundColor: "#fff" },
   title: { fontSize: 20, fontWeight: "bold", marginBottom: 20, color: "#006d3a" },
   label: { fontSize: 14, fontWeight: "600", marginBottom: 6, color: "#333" },
-  pickerWrapper: {
+  buttonRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 20 },
+  flexBtn: { flex: 1, marginHorizontal: 5 },
+  dropdownWrapper: { marginBottom: 16 },
+  dropdownHeader: {
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 6,
-    marginBottom: 16,
+    padding: 12,
     backgroundColor: "#fff",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
-  picker: { height: 50 },
-  buttonRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 20 },
-  button: { flex: 1, padding: 12, borderRadius: 6, alignItems: "center", marginHorizontal: 5 },
-  cancel: { backgroundColor: "#cc0000" },
-  save: { backgroundColor: "#006d3a" },
-  buttonText: { color: "#fff", fontWeight: "bold" },
-  safeArea: { flex: 1, backgroundColor: "#006d3a" },
-header: { flexDirection: "row", alignItems: "center", padding: 12 },
-backButton: { marginRight: 12 },
-headerTitle: { color: "#fff", fontSize: 18, fontWeight: "bold" },
-
+  dropdownText: { fontSize: 14, color: "#333" },
+  dropdownList: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 6,
+    backgroundColor: "#fff",
+    marginTop: 4,
+  },
+  dropdownItem: { padding: 12 },
+  addUnitItem: { padding: 12, borderBottomWidth: 1, borderBottomColor: "#eee" },
+  addUnitText: { color: "#006d3a", fontWeight: "600" }, // ✅ green text
+  dialogBox: { backgroundColor: "#fff" }, // ✅ white background
+  input: { marginBottom: 12 },
+  warningText: { color: "#cc0000", fontSize: 12, marginTop: 4 },
 });
+
+
+
+
+
+
+
 
 
