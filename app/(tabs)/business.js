@@ -1,14 +1,16 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Modal, FlatList } from "react-native";
 import Header from "../../app/components/Header";
 import FooterNav from "../../app/components/FooterNav";
 import JobsTab from "./JobsTab";
 import PostsTab from "./PostsTab";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import AddItem from "./AddItem";
+import ProductList from "./ProductList";
 
 export default function Business() {
   const [activeTab, setActiveTab] = useState("product");
+  const [productDialogVisible, setProductDialogVisible] = useState(false);
 
   const [company] = useState({
     name: "Namma Business",
@@ -37,8 +39,9 @@ export default function Business() {
       setJobDialogVisible(true);
     } else if (activeTab === "posts") {
       setPostDialogVisible(true);
+    } else if (activeTab === "product") {
+      setProductDialogVisible(true);
     }
-    // For product tab, FAB not needed since AddItem screen already has Save
   };
 
   return (
@@ -67,8 +70,9 @@ export default function Business() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
-        {activeTab === "product" && <AddItem />}
+      {/* Content Area */}
+      <View style={styles.content}>
+        {activeTab === "product" && <ProductList />}
         {activeTab === "posts" && (
           <PostsTab
             posts={posts}
@@ -86,14 +90,19 @@ export default function Business() {
             setJobDialogVisible={setJobDialogVisible}
           />
         )}
-      </ScrollView>
+      </View>
 
-      {/* Global FAB (only for jobs/posts) */}
-      {(activeTab === "jobs" || activeTab === "posts") && (
+      {/* FAB for all tabs */}
+      {(activeTab === "product" || activeTab === "jobs" || activeTab === "posts") && (
         <TouchableOpacity style={styles.fab} onPress={handleFabClick}>
           <Icon name="plus-circle" size={36} color="#eee" />
         </TouchableOpacity>
       )}
+
+      {/* Product AddItem Modal */}
+      <Modal visible={productDialogVisible} animationType="slide">
+        <AddItem />
+      </Modal>
 
       <FooterNav />
     </View>
@@ -102,7 +111,7 @@ export default function Business() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f9f9f9" },
-  content: { padding: 16 },
+  content: { flex: 1, padding: 16 },
   tabBar: { flexDirection: "row", backgroundColor: "#eee" },
   tabButton: { flex: 1, padding: 12, alignItems: "center" },
   activeTab: { borderBottomWidth: 3, borderBottomColor: "#006d3a" },
@@ -120,8 +129,9 @@ const styles = StyleSheet.create({
     elevation: 6,
     zIndex: 10,
   },
-  fabText: { color: "#fff", fontSize: 28, fontWeight: "bold" },
 });
+
+
 
 
 

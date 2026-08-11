@@ -1,24 +1,10 @@
 // app/components/PricingForm.js
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Modal, FlatList } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
-export default function PricingForm({ onPricingChange }) {
-  const [salePrice, setSalePrice] = useState("");
-  const [discount, setDiscount] = useState("");
-  const [purchasePrice, setPurchasePrice] = useState("");
-
-  const [salePriceType, setSalePriceType] = useState("Without Tax");
-  const [saleDropdownVisible, setSaleDropdownVisible] = useState(false);
-
-  const [discountType, setDiscountType] = useState("Percentage");
-  const [discountDropdownVisible, setDiscountDropdownVisible] = useState(false);
-
-  const [purchasePriceType, setPurchasePriceType] = useState("Without Tax");
-  const [purchaseDropdownVisible, setPurchaseDropdownVisible] = useState(false);
-
-  const [taxRate, setTaxRate] = useState("None");
-  const [taxDropdownVisible, setTaxDropdownVisible] = useState(false);
+export default function PricingForm({ pricingData, onPricingChange }) {
+  const { salePrice, salePriceType, discount, discountType, purchasePrice, purchasePriceType, taxRate } = pricingData;
 
   const priceOptions = ["Without Tax", "With Tax"];
   const discountOptions = ["Percentage", "Amount"];
@@ -28,18 +14,11 @@ export default function PricingForm({ onPricingChange }) {
     "GST@5% — 5.0","IGST@5% — 5.0","GST@12% — 12.0","IGST@12% — 12.0",
   ];
 
-  // Whenever state changes, notify parent
-  useEffect(() => {
-    onPricingChange({
-      salePrice,
-      salePriceType,
-      discount,
-      discountType,
-      purchasePrice,
-      purchasePriceType,
-      taxRate,
-    });
-  }, [salePrice, salePriceType, discount, discountType, purchasePrice, purchasePriceType, taxRate]);
+  // Dropdown visibility states (UI only)
+  const [saleDropdownVisible, setSaleDropdownVisible] = React.useState(false);
+  const [discountDropdownVisible, setDiscountDropdownVisible] = React.useState(false);
+  const [purchaseDropdownVisible, setPurchaseDropdownVisible] = React.useState(false);
+  const [taxDropdownVisible, setTaxDropdownVisible] = React.useState(false);
 
   return (
     <View style={styles.container}>
@@ -47,45 +26,61 @@ export default function PricingForm({ onPricingChange }) {
       <Text style={styles.sectionTitle}>Sale Price</Text>
       <TouchableOpacity style={styles.inputRowFull} onPress={() => setSaleDropdownVisible(true)} activeOpacity={0.7}>
         <TextInput
-          style={[styles.input, { flex: 1 }]}
-          placeholder="Sale Price"
-          value={salePrice}
-          onChangeText={setSalePrice}
-          keyboardType="numeric"
-        />
+  style={[styles.input, { flex: 1 }]}
+  placeholder="Sale Price"
+  value={salePrice}
+  keyboardType="numeric"
+  onChangeText={(val) => {
+    // allow only digits
+    const numericVal = val.replace(/[^0-9]/g, "");
+    onPricingChange({ ...pricingData, salePrice: numericVal });
+  }}
+/>
+
         <Text style={styles.dropdownText}>{salePriceType}</Text>
         <Icon name="chevron-down" size={20} color="#666" style={styles.dropdownIcon} />
       </TouchableOpacity>
-      <DropdownModal visible={saleDropdownVisible} options={priceOptions} onClose={() => setSaleDropdownVisible(false)} onSelect={setSalePriceType} />
+      <DropdownModal visible={saleDropdownVisible} options={priceOptions} onClose={() => setSaleDropdownVisible(false)} onSelect={(val) => onPricingChange({ ...pricingData, salePriceType: val })} />
 
       {/* Discount */}
       <TouchableOpacity style={styles.inputRowFull} onPress={() => setDiscountDropdownVisible(true)} activeOpacity={0.7}>
-        <TextInput
-          style={[styles.input, { flex: 1 }]}
-          placeholder="Disc. On Sale Price"
-          value={discount}
-          onChangeText={setDiscount}
-          keyboardType="numeric"
-        />
+       <TextInput
+  style={[styles.input, { flex: 1 }]}
+  placeholder="Disc. On Sale Price"
+  value={discount}
+  keyboardType="numeric"
+  maxLength={2} // restrict to 2 digits
+  onChangeText={(val) => {
+    // allow only numbers
+    const numericVal = val.replace(/[^0-9]/g, "");
+    onPricingChange({ ...pricingData, discount: numericVal });
+  }}
+/>
+
         <Text style={styles.dropdownText}>{discountType}</Text>
         <Icon name="chevron-down" size={20} color="#666" style={styles.dropdownIcon} />
       </TouchableOpacity>
-      <DropdownModal visible={discountDropdownVisible} options={discountOptions} onClose={() => setDiscountDropdownVisible(false)} onSelect={setDiscountType} />
+      <DropdownModal visible={discountDropdownVisible} options={discountOptions} onClose={() => setDiscountDropdownVisible(false)} onSelect={(val) => onPricingChange({ ...pricingData, discountType: val })} />
 
       {/* Purchase Price */}
       <Text style={styles.sectionTitle}>Purchase Price</Text>
       <TouchableOpacity style={styles.inputRowFull} onPress={() => setPurchaseDropdownVisible(true)} activeOpacity={0.7}>
-        <TextInput
-          style={[styles.input, { flex: 1 }]}
-          placeholder="Purchase Price"
-          value={purchasePrice}
-          onChangeText={setPurchasePrice}
-          keyboardType="numeric"
-        />
+    <TextInput
+  style={[styles.input, { flex: 1 }]}
+  placeholder="Purchase Price"
+  value={purchasePrice}
+  keyboardType="numeric"
+  onChangeText={(val) => {
+    // allow only digits
+    const numericVal = val.replace(/[^0-9]/g, "");
+    onPricingChange({ ...pricingData, purchasePrice: numericVal });
+  }}
+/>
+
         <Text style={styles.dropdownText}>{purchasePriceType}</Text>
         <Icon name="chevron-down" size={20} color="#666" style={styles.dropdownIcon} />
       </TouchableOpacity>
-      <DropdownModal visible={purchaseDropdownVisible} options={priceOptions} onClose={() => setPurchaseDropdownVisible(false)} onSelect={setPurchasePriceType} />
+      <DropdownModal visible={purchaseDropdownVisible} options={priceOptions} onClose={() => setPurchaseDropdownVisible(false)} onSelect={(val) => onPricingChange({ ...pricingData, purchasePriceType: val })} />
 
       {/* Taxes */}
       <Text style={styles.sectionTitle}>Taxes</Text>
@@ -93,7 +88,7 @@ export default function PricingForm({ onPricingChange }) {
         <Text style={{ flex: 1, color: taxRate !== "None" ? "#000" : "#999" }}>{taxRate}</Text>
         <Icon name="chevron-down" size={20} color="#666" style={styles.dropdownIcon} />
       </TouchableOpacity>
-      <DropdownModal visible={taxDropdownVisible} options={taxOptions} onClose={() => setTaxDropdownVisible(false)} onSelect={setTaxRate} />
+      <DropdownModal visible={taxDropdownVisible} options={taxOptions} onClose={() => setTaxDropdownVisible(false)} onSelect={(val) => onPricingChange({ ...pricingData, taxRate: val })} />
     </View>
   );
 }
@@ -125,12 +120,12 @@ const styles = StyleSheet.create({
   input: { paddingVertical: 10, paddingHorizontal: 8, backgroundColor: "#fff" },
   dropdownText: { marginLeft: 8, color: "#333" },
   dropdownIcon: { marginLeft: 6 },
-  divider: { borderBottomWidth: 1, borderBottomColor: "#ccc", marginVertical: 12 },
   modalOverlay: { flex: 1, justifyContent: "center", backgroundColor: "rgba(0,0,0,0.3)" },
   dropdownContainer: { marginHorizontal: 40, backgroundColor: "#fff", borderRadius: 6, paddingVertical: 8 },
   dropdownItem: { paddingVertical: 12, paddingHorizontal: 16 },
   dropdownItemText: { fontSize: 14, color: "#333" },
 });
+
 
 
 
