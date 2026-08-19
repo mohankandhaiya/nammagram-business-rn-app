@@ -1,7 +1,7 @@
 // app/business/AddCategory.js
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import { SafeAreaView, View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams  } from "expo-router";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 export default function AddCategory() {
@@ -10,7 +10,7 @@ export default function AddCategory() {
   const [categories, setCategories] = useState(["RO Water", "Electronics", "Groceries"]);
   const [selectedCategories, setSelectedCategories] = useState([]); // array now
   const [newCategory, setNewCategory] = useState("");
-
+ 
   const filteredCategories = categories.filter(cat =>
     cat.toLowerCase().includes(search.toLowerCase())
   );
@@ -26,7 +26,7 @@ export default function AddCategory() {
   const handleApply = () => {
     if (selectedCategories.length > 0) {
       router.push({
-        pathname: "/AddItem",
+        pathname: "/business/AddItem",
         params: { categories: JSON.stringify(selectedCategories) }, 
         // pass as JSON string so AddItem can parse back into array
       });
@@ -43,6 +43,7 @@ export default function AddCategory() {
     }
   };
 
+
   return (
     <SafeAreaView style={styles.safeArea}>
       {/* Sticky Header fills safe area */}
@@ -58,15 +59,25 @@ export default function AddCategory() {
         data={filteredCategories}
         keyExtractor={(item, idx) => idx.toString()}
         renderItem={({ item }) => (
+          // <TouchableOpacity
+          //   style={styles.categoryRow}
+          //   onPress={() => toggleCategory(item)}
+          // >
+          //   <Text style={styles.categoryText}>{item}</Text>
+          //   {selectedCategories.includes(item) && (
+          //     <Icon name="check" size={20} color="#006d3a" />
+          //   )}
+          // </TouchableOpacity>
           <TouchableOpacity
-            style={styles.categoryRow}
-            onPress={() => toggleCategory(item)}
-          >
-            <Text style={styles.categoryText}>{item}</Text>
-            {selectedCategories.includes(item) && (
-              <Icon name="check" size={20} color="#006d3a" />
-            )}
-          </TouchableOpacity>
+  style={styles.categoryRow}
+  onPress={() => toggleCategory(item)}
+>
+  <Text style={styles.categoryText}>{item}</Text>
+  {selectedCategories.includes(item) && (
+    <Text style={styles.tickSymbol}>✔</Text>  
+  )}
+</TouchableOpacity>
+
         )}
         ListHeaderComponent={
           <View style={styles.container}>
@@ -175,6 +186,12 @@ const styles = StyleSheet.create({
     borderRadius: 0,
   },
   applyText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
+  tickSymbol: {
+  fontSize: 18,
+  color: "#006d3a",
+  fontWeight: "bold",
+},
+
 });
 
 

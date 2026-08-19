@@ -1,10 +1,10 @@
 import React, { useState, useEffect,useRef } from "react";
-import {View,Text,StyleSheet,TouchableOpacity,TextInput,Image,Modal,FlatList,RefreshControl,
+import {View,Text,StyleSheet,TouchableOpacity,TextInput,Image,Modal,FlatList,RefreshControl,Share
 } from "react-native";
 import {collection,onSnapshot,query,orderBy,updateDoc,doc,deleteDoc,addDoc,arrayUnion,serverTimestamp,setDoc,increment
 } from "firebase/firestore";
 import { toggleSavePost } from "../helpers/toggleSavePost";
-import { Share } from "react-native";
+// import { Share } from "react-native";
 import { getAuth } from "firebase/auth";
 import { db} from "../helpers/firebaseConfig";
 import { uploadToCloudinary } from "../helpers/cloudinaryUpload";
@@ -195,9 +195,12 @@ const handleSavePost = async (post) => {
 };
 const handleSharePost = async (post) => {
   try {
+    const shareMessage = `${post.author} shared a post:\n\n${post.content}${
+      post.image ? `\n\nImage: ${post.image}` : ""
+    }`;
+
     const result = await Share.share({
-      message: `${post.author} shared a post:\n\n${post.content}`,
-      url: post.image || undefined, // optional image link
+      message: shareMessage,
       title: "Share Post",
     });
 
@@ -270,7 +273,7 @@ const handleSharePost = async (post) => {
       />
 
       {/* Bottom-right icons */}
-      <View style={styles.bottomRightRow}>
+       <View style={styles.bottomRightRow}>
         <TouchableOpacity onPress={() => setPostDialogVisible(false)} style={styles.iconButton}>
           <Icon name="close-circle" size={32} color="#cc0000" />
         </TouchableOpacity>
@@ -325,10 +328,20 @@ const handleSharePost = async (post) => {
 
 
       {/* Comment Dialog */}
-      <Modal visible={commentDialogVisible} transparent animationType="slide">
-  <View style={styles.dialogOverlay}>
-    <View style={styles.dialogBox}>
+     {/* Comment Dialog */}
+<Modal visible={commentDialogVisible} transparent animationType="slide">
+  <View style={styles.overlay}>
+    <View style={styles.commentModal}>
+      {/* Header */}
       <Text style={styles.dialogTitle}>Comments</Text>
+
+      {/* Add new comment */}
+      <TextInput
+        style={styles.input}
+        placeholder="Add a comment..."
+        value={commentText}
+        onChangeText={setCommentText}
+      />
 
       {/* Existing comments */}
       <FlatList
@@ -342,26 +355,25 @@ const handleSharePost = async (post) => {
         )}
       />
 
-      {/* Add new comment */}
-      <TextInput
-        style={styles.input}
-        placeholder="Add a comment..."
-        value={commentText}
-        onChangeText={setCommentText}
-      />
-      <TouchableOpacity style={styles.button} onPress={addComment}>
-        <Text style={styles.buttonText}>Post Comment</Text>
-      </TouchableOpacity>
+      {/* Action buttons row */}
+      <View style={styles.actionRow}>
+        <TouchableOpacity style={[styles.smallBtn, styles.postBtn]} onPress={addComment}>
+          <Icon name="send" size={18} color="#fff" />
+          <Text style={styles.btnText}>Post</Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity
-        style={[styles.button, styles.cancel]}
-        onPress={() => setCommentDialogVisible(false)}
-      >
-        <Text style={styles.buttonText}>Close</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.smallBtn, styles.closeBtn]}
+          onPress={() => setCommentDialogVisible(false)}
+        >
+          <Icon name="close" size={18} color="#fff" />
+          <Text style={styles.btnText}>Close</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   </View>
 </Modal>
+
 
     </View>
   );
@@ -584,9 +596,80 @@ captionBox: {
 bottomRightRow: {
   flexDirection: "row",
   justifyContent: "flex-end", // push icons to right
-  marginTop: 20,
+  // marginTop: 20,
+  marginTop: 16,
+  actionBtn: {
+  flexDirection: "row",
+  alignItems: "center",
+  paddingVertical: 10,
+  paddingHorizontal: 14,
+  borderRadius: 6,
+  marginHorizontal: 6,
 },
-
+closeBtn: {
+  backgroundColor: "#cc0000",
+},
+sendBtn: {
+  backgroundColor: "#006d3a",
+},
+btnText: {
+  color: "#fff",
+  fontWeight: "bold",
+  marginLeft: 6,
+},
+},
+overlay: {
+  flex: 1,
+  justifyContent: "flex-end",
+  backgroundColor: "rgba(0,0,0,0.3)",
+},
+commentModal: {
+  width: "100%",
+  height: "50%", // ✅ half screen height
+  backgroundColor: "#fff",
+  borderTopLeftRadius: 16,
+  borderTopRightRadius: 16,
+  padding: 16,
+},
+dialogTitle: {
+  fontSize: 18,
+  fontWeight: "bold",
+  color: "#006d3a",
+  marginBottom: 12,
+},
+input: {
+  borderWidth: 1,
+  borderColor: "#ccc",
+  borderRadius: 6,
+  padding: 8,
+  marginBottom: 12,
+},
+commentText: {
+  fontSize: 14,
+  color: "#333",
+  marginBottom: 6,
+},
+actionRow: {
+  flexDirection: "row",
+  justifyContent: "flex-end", // ✅ right side corner
+  marginTop: 10,
+},
+smallBtn: {
+  flexDirection: "row",
+  alignItems: "center",
+  paddingVertical: 6,   // ✅ smaller height
+  paddingHorizontal: 10,
+  borderRadius: 6,
+  marginLeft: 8,
+},
+postBtn: { backgroundColor: "#006d3a" },
+closeBtn: { backgroundColor: "#cc0000" },
+btnText: {
+  color: "#fff",
+  fontWeight: "600",
+  marginLeft: 4,
+  fontSize: 13,
+},
 
 });
 

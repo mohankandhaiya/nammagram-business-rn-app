@@ -3,7 +3,18 @@ import { View, Text, StyleSheet, ScrollView } from "react-native";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import Header from "../components/Header";       // ✅ import your Header
 import FooterNav from "../components/FooterNav"; // ✅ import your FooterNav
-
+import AddSection from "../components/AddSection";
+const ads = [
+  {
+    image: "https://copilot.microsoft.com/th/id/BCO.abe40cde-0962-4d10-a875-0560901d162d.png",
+  },
+  {
+    image: "https://copilot.microsoft.com/th/id/BCO.20cfddb4-1bf8-4e02-bc8b-1b42ecf8aa99.png",
+  },
+  {
+    image: "https://copilot.microsoft.com/th/id/BCO.62a39411-2577-4f97-8309-7294003575ab.png",
+  },
+];
 export default function Dashboard() {
   return (
     <View style={styles.container}>
@@ -14,7 +25,7 @@ export default function Dashboard() {
       <ScrollView style={styles.content} contentContainerStyle={{ paddingBottom: 80 }}>
         {/* Dashboard Title */}
         <Text style={styles.header}>Dashboard</Text>
-
+ <AddSection ads={ads} />
         {/* Report Section */}
         <View style={styles.card}>
           <View style={styles.cardHeader}>

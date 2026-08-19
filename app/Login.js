@@ -19,7 +19,7 @@ export default function LoginScreen() {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       if (userCredential.user.emailVerified) {
-        router.replace("/(tabs)/home");
+        router.replace("/(tabs)/Dashboard");
       } else {
         alert("Please verify your email before logging in.");
       }

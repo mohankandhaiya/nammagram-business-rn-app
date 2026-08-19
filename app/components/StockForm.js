@@ -10,13 +10,15 @@ export default function StockForm({ stockData, onStockChange }) {
     <View style={styles.container}>
       <Text style={styles.sectionTitle}>Stock</Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Opening Stock (Ex: 300)"
-        value={openingStock}
-        onChangeText={(val) => onStockChange({ ...stockData, openingStock: val })}
-        keyboardType="numeric"
-      />
+     <TextInput
+  style={styles.input}
+  placeholder="Opening Stock (Ex: 300)"
+  value={openingStock?.toString()}
+  onChangeText={(val) =>
+    onStockChange({ ...stockData, openingStock: Number(val) })
+  }
+  keyboardType="numeric"
+/>
 
       {/* As of Date with Calendar */}
       <TouchableOpacity onPress={() => setShowDatePicker(true)}>
@@ -49,13 +51,15 @@ export default function StockForm({ stockData, onStockChange }) {
         onChangeText={(val) => onStockChange({ ...stockData, pricePerUnit: val })}
         keyboardType="numeric"
       />
-      <TextInput
-        style={styles.input}
-        placeholder="Min Stock Qty (Ex: 5)"
-        value={minStockQty}
-        onChangeText={(val) => onStockChange({ ...stockData, minStockQty: val })}
-        keyboardType="numeric"
-      />
+    <TextInput
+  style={styles.input}
+  placeholder="Min Stock Qty (Ex: 5)"
+  value={minStockQty?.toString()}
+  onChangeText={(val) =>
+    onStockChange({ ...stockData, minStockQty: Number(val) })
+  }
+  keyboardType="numeric"
+/>
       <TextInput
         style={styles.input}
         placeholder="Item Location"

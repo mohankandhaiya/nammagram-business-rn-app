@@ -15,7 +15,8 @@ export default function ProductList() {
       try {
         const querySnapshot = await getDocs(collection(db, "products"));
         const items = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setProducts(items);
+         setProducts(items);
+        
       } catch (error) {
         console.error("Error fetching products:", error);
       }

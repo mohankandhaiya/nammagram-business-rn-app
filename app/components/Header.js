@@ -33,11 +33,11 @@ export default function Header() {
 
         {/* Right side icons */}
         <View style={styles.iconGroup}>
-          <Appbar.Action
+          {/* <Appbar.Action
             icon="wallet"
             color="#fff"
             onPress={() => router.push("/wallet")}
-          />
+          /> */}
           <Appbar.Action
             icon="bell"
             color="#fff"

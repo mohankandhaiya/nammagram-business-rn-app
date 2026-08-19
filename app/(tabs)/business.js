@@ -5,7 +5,7 @@ import FooterNav from "../../app/components/FooterNav";
 import JobsTab from "./JobsTab";
 import PostsTab from "./PostsTab";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import AddItem from "./AddItem";
+import AddItem from "../business/AddItem";
 import ProductList from "./ProductList";
 
 export default function Business() {

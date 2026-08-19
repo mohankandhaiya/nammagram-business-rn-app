@@ -1,67 +1,78 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView,Image,Modal } from "react-native";
 import { useRouter } from "expo-router";
 import PricingForm from "../components/PricingForm";
 import StockForm from "../components/StockForm";
-import CategoryModal from "../components/CategoryModal";
+ import CategoryModal from "../components/CategoryModal";
 import { useLocalSearchParams } from "expo-router";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons"; 
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, updateDoc, doc, } from "firebase/firestore";
 import { db } from "../helpers/firebaseConfig"; // adjust path
 import * as ImagePicker from "expo-image-picker";
 // import ImageCropPicker from "react-native-image-crop-picker";
 import * as ImageManipulator from "expo-image-manipulator";
-export default function AddItem() {
+export default function AddItem({ initialData = {}, onSave }) {
   const router = useRouter();
+    // const { categories } = useLocalSearchParams();
+ 
 const [imageUri, setImageUri] = useState(null);
-const [images, setImages] = useState([]);
+// const [images, setImages] = useState([]);
+ const [images, setImages] = useState(initialData.images || []);
   const [activeTab, setActiveTab] = useState("product"); // product | service
   const [activeSubTab, setActiveSubTab] = useState("pricing"); // pricing | stock
-const [pricingData, setPricingData] = useState({
+const { primaryShort, secondaryShort, conversionRate, primaryUnit, secondaryUnit } = useLocalSearchParams();
+  const [units, setUnits] = useState([]);
+    const [unitData, setUnitData] = useState(null);
+ const [pricingData, setPricingData] = useState(initialData.pricing ||{
   salePrice: "",
-  taxRate: "",
-  discount: "",
-});
+purchasePrice: "",
+   taxRate: "",
+   discount: "",
+ });
 
-const [stockData, setStockData] = useState({
+ const [stockData, setStockData] = useState(initialData.stock ||{
   openingStock: "",
   asOfDate: "",
-  pricePerUnit: "",
+   pricePerUnit: "",
   minStockQty: "",
   itemLocation: "",
 });
 
-  const [itemName, setItemName] = useState("");
-  const [itemCode, setItemCode] = useState("");
-  const [itemCategory, setItemCategory] = useState("");
+  const [itemCategories, setItemCategories] = useState("");
+  // const [itemName, setItemName] = useState("");
+  // const [itemCode, setItemCode] = useState("");
+  // const [itemCategory, setItemCategory] = useState("");
+   const [itemName, setItemName] = useState(initialData.itemName || "");
+  const [itemCode, setItemCode] = useState(initialData.itemCode || "");
+  const [itemCategory, setItemCategory] = useState(initialData.itemCategory || "");
   const [hsnCode, setHsnCode] = useState("");
 const [previewIndex, setPreviewIndex] = useState(null); // for full image view
 const [dialogVisible, setDialogVisible] = useState(false);
     // Category modal state
-  const [categoryModalVisible, setCategoryModalVisible] = useState(false);
-  const [categories, setCategories] = useState(["RO Water", "Electronics", "Groceries"]);
+   const [categoryModalVisible, setCategoryModalVisible] = useState(false);
+    const [categories, setCategories] = useState([]);
 
-  const handleAddCategory = () => {
-    const newCat = `Category ${categories.length + 1}`;
-    setCategories([...categories, newCat]);
+   const handleAddCategory = () => {
+     const newCat = `Category ${categories.length + 1}`;
+     setCategories([...categories, newCat]);
   };
-const params = useLocalSearchParams();
+ const params = useLocalSearchParams();
 
-React.useEffect(() => {
-  if (params.categories) {
-    try {
-      const parsed = JSON.parse(params.categories); // array of categories
-      setItemCategory(parsed.join(", ")); // show them in the input as comma-separated
-      // Optionally merge into categories list
-      const newCats = parsed.filter(c => !categories.includes(c));
-      if (newCats.length > 0) {
-        setCategories([...categories, ...newCats]);
-      }
-    } catch (e) {
-      console.error("Failed to parse categories:", e);
-    }
-  }
-}, [params.categories]);
+ React.useEffect(() => {
+ if (params.categories) {
+     try {
+      const parsed = JSON.parse(params.categories); 
+       setItemCategory(parsed.join(", ")); 
+      
+       const newCats = parsed.filter(c => !categories.includes(c));
+       if (newCats.length > 0) {
+         setCategories([...categories, ...newCats]);
+       }
+     } catch (e) {
+       console.error("Failed to parse categories:", e);
+     }
+   }
+ }, [params.categories]);
 
 const pickFromGallery = async () => {
   const result = await ImagePicker.launchImageLibraryAsync({
@@ -118,31 +129,132 @@ const uploadToCloudinary = async (uri) => {
   return json.secure_url; // Cloudinary hosted URL
 };
 
- const handleSaveItem = async () => {
-    try {
-      let imageUrls = [];
+//  const handleSaveItem = async () => {
+//     try {
+//       let imageUrls = [];
+//     for (const uri of images) {
+//       const url = await uploadToCloudinary(uri);
+//       imageUrls.push(url);
+//     }
+//       await addDoc(collection(db, "products"), {
+//         itemName,
+//         itemCode,
+//         itemCategory,
+//         hsnCode,
+//         pricing: pricingData, // collected from PricingForm
+//          stock: stockData,
+//         images: imageUrls,  // Cloudinary URL
+//         createdAt: new Date(),
+//       });
+//       alert("Item saved successfully!");
+//       // router.back();
+//       router.push("/ProductList");
+//     } catch (error) {
+//       console.error("Error saving item:", error);
+//       alert("Failed to save item.");
+//     }
+//   };
+const handleSaveItem = async () => {
+  try {
+    let imageUrls = [];
+
+    // Upload images to Cloudinary
     for (const uri of images) {
       const url = await uploadToCloudinary(uri);
       imageUrls.push(url);
     }
+
+    const productData = {
+      itemName,
+      itemCode,
+      itemCategory,
+      hsnCode,
+      pricing: pricingData,
+      stock: stockData,
+      images: imageUrls,
+      updatedAt: new Date(), // track last update
+    };
+
+    if (initialData?.id) {
+      // ✅ EDIT MODE → update existing product
+      const productRef = doc(db, "products", initialData.id);
+      await updateDoc(productRef, productData);
+      alert("Product updated successfully!");
+    } else {
+      // ✅ ADD MODE → create new product
       await addDoc(collection(db, "products"), {
-        itemName,
-        itemCode,
-        itemCategory,
-        hsnCode,
-        pricing: pricingData, // collected from PricingForm
-         stock: stockData,
-        images: imageUrls,  // Cloudinary URL
+        ...productData,
         createdAt: new Date(),
       });
-      alert("Item saved successfully!");
-      // router.back();
-      router.push("/ProductList");
-    } catch (error) {
-      console.error("Error saving item:", error);
-      alert("Failed to save item.");
+      alert("Product added successfully!");
+    }
+
+    router.push("/business?tab=product");
+  } catch (error) {
+    console.error("Error saving item:", error);
+    alert("Failed to save item.");
+  }
+};
+
+ const handleCancel = () => {
+    if (initialData?.id) {
+      // ✅ If editing, go back to ProductDetails with product data
+      router.push({
+        pathname: "/business/ProductDetails",
+        params: { product: JSON.stringify(initialData) },
+      });
+    } else {
+      // ✅ If adding new, just go back to ProductList
+      router.push("/business?tab=product");
     }
   };
+  //  useEffect(() => {
+  //   if (primaryUnit && secondaryUnit && conversionRate) {
+  //     setUnits((prev) => [
+  //       ...prev,
+  //       { primaryUnit, secondaryUnit, conversionRate },
+  //     ]);
+  //   }
+  // }, [primaryUnit, secondaryUnit, conversionRate]);
+
+useEffect(() => {
+  if (primaryShort && secondaryShort && conversionRate) {
+    setUnitData({
+      primaryShort,
+      secondaryShort,
+      conversionRate,
+      primaryUnit,
+      secondaryUnit,
+    });
+  }
+}, [primaryShort, secondaryShort, conversionRate]);
+useEffect(() => {
+  if (categories) {
+    try {
+      const parsed = JSON.parse(categories);
+      if (parsed.length > 0) {
+        setItemCategories(parsed.join(", "));
+      } else {
+        setItemCategories(""); // clear if none selected
+      }
+    } catch (e) {
+      console.error("Error parsing categories:", e);
+    }
+  } else {
+    setItemCategories(""); // clear if param missing
+  }
+}, [categories]);
+
+//  useEffect(() => {
+//     if (categories) {
+//       try {
+//         const parsed = JSON.parse(categories);
+//         setItemCategories(parsed.join(", ")); // convert array → string
+//       } catch (e) {
+//         console.error("Error parsing categories:", e);
+//       }
+//     }
+//   }, [categories]);
   return (
     <View style={styles.container}>
        <View style={styles.header}>
@@ -185,13 +297,28 @@ const uploadToCloudinary = async (uri) => {
   </TouchableOpacity>
 
   {/* Preview Thumbnails */}
-  <View style={styles.previewRow}>
+  {/* <View style={styles.previewRow}>
     {images.map((uri, idx) => (
       <TouchableOpacity key={idx} onPress={() => setPreviewIndex(idx)}>
         <Image source={{ uri }} style={styles.previewImage} />
       </TouchableOpacity>
     ))}
-  </View>
+  </View> */}
+  <View style={styles.previewRow}>
+  {images.map((uri, idx) => (
+    <TouchableOpacity key={idx} onPress={() => setPreviewIndex(idx)}>
+        <Image source={{ uri }} style={styles.previewImage} />
+     
+
+      {/* Edit Icon Overlay (visual only) */}
+      <View style={styles.editIcon}>
+        <Icon name="pencil" size={16} color="#fff" />
+      
+    </View>
+     </TouchableOpacity>
+  ))}
+</View>
+
 </View>
 
 {/* Dialog for Camera/Gallery */}
@@ -225,11 +352,29 @@ const uploadToCloudinary = async (uri) => {
               />
               <TouchableOpacity
                 style={styles.roundButton}
-                onPress={() => router.push("/AddItemUnit")}
+                onPress={() => router.push("/business/AddItemUnit")}
               >
                 <Text style={styles.roundButtonText}>Unit</Text>
               </TouchableOpacity>
             </View>
+<View style={styles.itemRow}>
+  {unitData && (
+    <TouchableOpacity
+      style={styles.unitBox}
+      onPress={() =>
+        router.push({
+          pathname: "/business/AddItemUnit",
+          params: unitData, // send back selected unit data
+        })
+      }
+    >
+      <Text style={styles.unitText}>
+        1 {unitData.primaryShort} = {unitData.conversionRate} {unitData.secondaryShort}
+      </Text>
+    </TouchableOpacity>
+  )}
+</View>
+
 <View style={styles.inputRow}>
   <TextInput
     style={[styles.input, { flex: 1 }]}
@@ -249,9 +394,9 @@ const uploadToCloudinary = async (uri) => {
   </TouchableOpacity>
 </View>
 
-            {/* Item Category input + button */}
+          
 {/* Item Category input (tappable with dropdown icon) */}
-<View style={styles.inputRow}>
+{/* <View style={styles.inputRow}>
   <TouchableOpacity
     style={[styles.input, styles.categoryInput]}
     onPress={() => router.push("/AddCategory")}
@@ -262,8 +407,20 @@ const uploadToCloudinary = async (uri) => {
     </Text>
     <Icon name="chevron-down" size={20} color="#666" style={styles.dropdownIcon} />
   </TouchableOpacity>
-</View>
+</View> */}
 
+<View style={styles.inputRow}>
+  <TouchableOpacity
+    style={[styles.input, styles.categoryInput]}
+    onPress={() => router.push("/AddCategory")}
+    activeOpacity={0.7}
+  >
+    <Text style={{ color: itemCategories ? "#000" : "#999" }}>
+      {itemCategories || "Item Category"}
+    </Text>
+    <Icon name="chevron-down" size={20} color="#666" style={styles.dropdownIcon} />
+  </TouchableOpacity>
+</View>
 
 
             <View style={styles.inputRow}>
@@ -338,7 +495,7 @@ const uploadToCloudinary = async (uri) => {
 
       {/* Sticky Action Buttons */}
       <View style={styles.stickyButtonRow}>
-        <TouchableOpacity style={[styles.button, styles.cancel]}>
+        <TouchableOpacity style={[styles.button, styles.cancel]} onPress={handleCancel}>
           <Text style={styles.buttonText}>Cancel</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.button, styles.save]} onPress={handleSaveItem}>
@@ -526,14 +683,14 @@ previewRow: {
   marginTop: 12,
 },
 previewImage: {
-  width: 60,
-  height: 60,
+  width: 80,
+  height: 80,
   borderRadius: 6,
   margin: 4,
 },
 previewWrapper: {
   position: "relative",
-  margin: 4,
+  margin: 10,
 },
 removeIcon: {
   position: "absolute",
@@ -601,11 +758,37 @@ previewThumb: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#006d3a", // your green theme
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    paddingVertical: 27,
+    paddingHorizontal: 17,
   },
   backButton: { marginRight: 12 },
   headerTitle: { fontSize: 18, fontWeight: "bold", color: "#fff" },
+  unitList: { marginTop: 12 },
+itemRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  marginBottom: 12,
+},
+unitBox: {
+  marginLeft: 8,
+  paddingVertical: 6,
+  paddingHorizontal: 10,
+  borderRadius: 6,
+  backgroundColor: "#f0f0f0",
+},
+unitText: {
+  fontSize: 12,
+  fontWeight: "600",
+  color: "#006d3a",
+},
+editIcon: {
+  position: "absolute",
+  top: 4,
+  right: 4,
+  backgroundColor: "#006d3a",
+  borderRadius: 10,
+  padding: 3,
+},
 });
 
 

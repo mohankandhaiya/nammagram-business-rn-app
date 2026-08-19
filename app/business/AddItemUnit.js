@@ -1,15 +1,21 @@
 // app/business/AddItemUnit.js
-import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import React, { useState,useEffect } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
+import { useLocalSearchParams } from "expo-router";
 import { Dialog, Portal, TextInput, Button, Provider } from "react-native-paper";
 
 export default function AddItemUnit() {
   const router = useRouter();
 
   // Initial units
+const {  primaryShort, secondaryShort, } = useLocalSearchParams();
+
+  const [selectedUnits, setSelectedUnits] = useState([]);
+       const [conversionRate, setConversionRate] = useState("0.0");
+const [editing, setEditing] = useState("");
   const [primaryUnits, setPrimaryUnits] = useState([
     "KILOMETER (Kmt)",
     "UNIT (Unit)",
@@ -25,8 +31,8 @@ export default function AddItemUnit() {
     "METER (Mtr)",
   ]);
 
-  const [primaryUnit, setPrimaryUnit] = useState("");
-  const [secondaryUnit, setSecondaryUnit] = useState("");
+   const [primaryUnit, setPrimaryUnit] = useState("");
+   const [secondaryUnit, setSecondaryUnit] = useState("");
 
   // Dialog state
   const [dialogVisible, setDialogVisible] = useState(false);
@@ -36,8 +42,16 @@ export default function AddItemUnit() {
 
   const handleSave = () => {
     router.push({
-      pathname: "/AddItem",
-      params: { primaryUnit, secondaryUnit },
+      // pathname: "/AddItem",
+       pathname: "/business/AddItem",
+      // params: { primaryUnit, secondaryUnit, conversionRate },
+        params: {
+      primaryUnit: primaryUnit,          // full name
+      secondaryUnit: secondaryUnit,      // full name
+      primaryShort: primaryUnit.match(/\((.*?)\)/)?.[1],   // extract short name
+      secondaryShort: secondaryUnit.match(/\((.*?)\)/)?.[1],
+      conversionRate,
+    },
     });
   };
 
@@ -56,7 +70,19 @@ export default function AddItemUnit() {
       setDialogVisible(false);
     }
   };
-
+useEffect(() => {
+  if (primaryUnit && secondaryUnit && conversionRate) {
+    setSelectedUnits([
+      {
+        primaryUnit,
+        secondaryUnit,
+        primaryShort,
+        secondaryShort,
+        conversionRate,
+      },
+    ]);
+  }
+}, [primaryUnit, secondaryUnit, conversionRate]);
   // Custom dropdown component
   const Dropdown = ({ label, options, selected, setSelected, type }) => {
     const [open, setOpen] = useState(false);
@@ -111,7 +137,7 @@ export default function AddItemUnit() {
       <SafeAreaView style={styles.safeArea}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <TouchableOpacity onPress={() => router.push("/business/AddItem")} style={styles.backButton}>
             <Icon name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
            <Text style={styles.headerTitle}>Add Item Unit</Text> 
@@ -137,6 +163,43 @@ export default function AddItemUnit() {
             setSelected={setSecondaryUnit}
             type="secondary"
           />
+<View style={styles.conversionRow}>
+  <Text style={styles.label}>Select Conversion Rate</Text>
+  <TouchableOpacity
+    onPress={() => setEditing(true)}
+    style={styles.conversionBox}
+  >
+    <Text style={styles.conversionText}>
+      1 {primaryUnit || "Primary"} = {conversionRate} {secondaryUnit || "Secondary"}
+    </Text>
+  </TouchableOpacity>
+
+  {editing && (
+    <TextInput
+      style={styles.input}
+      placeholder="Enter conversion"
+      value={conversionRate}
+      keyboardType="numeric"
+      onChangeText={setConversionRate}
+      onBlur={() => setEditing(false)}
+    />
+  )}
+</View>
+<View style={styles.selectedList}>
+  {selectedUnits.map((u, idx) => (
+    <View key={idx} style={styles.selectedRow}>
+      <Text style={styles.selectedText}>
+        1 {u.primaryShort} = {u.conversionRate} {u.secondaryShort}
+      </Text>
+      <TouchableOpacity
+        onPress={() => setSelectedUnits(selectedUnits.filter((_, i) => i !== idx))}
+      >
+        <Icon name="trash" size={20} color="#cc0000" />
+      </TouchableOpacity>
+    </View>
+  ))}
+</View>
+
 
           {/* Save/Cancel */}
           <View style={styles.buttonRow}>
@@ -232,6 +295,29 @@ const styles = StyleSheet.create({
   dialogBox: { backgroundColor: "#fff" }, // ✅ white background
   input: { marginBottom: 12 },
   warningText: { color: "#cc0000", fontSize: 12, marginTop: 4 },
+//   conversionRow: { marginVertical: 12 },
+// conversionText: { fontSize: 14, color: "#333", marginBottom: 6 },
+conversionRow: { marginVertical: 16 },
+conversionBox: {
+  borderWidth: 1,
+  borderColor: "#ccc",
+  borderRadius: 6,
+  padding: 12,
+  backgroundColor: "#fff",
+  marginBottom: 8,
+},
+conversionText: { fontSize: 14, color: "#333" },
+selectedList: { marginTop: 20 },
+selectedRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  paddingVertical: 8,
+  borderBottomWidth: 1,
+  borderBottomColor: "#ccc",
+},
+selectedText: { fontSize: 14, color: "#333", fontWeight: "600" },
+
 });
 
 

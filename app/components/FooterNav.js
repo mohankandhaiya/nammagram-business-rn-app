@@ -9,8 +9,9 @@ export default function FooterNav() {
 
   // ✅ Updated tabs: removed Wallet, added Dashboard in center
   const tabs = [
-    { path: "/home", label: "Home", icon: "home" },
+  
     { path: "/business", label: "Business", icon: "office-building" },
+      { path: "/wallet", label: "Wallet", icon: "wallet" },
     { path: "/Dashboard", label: "Dashboard", icon: "view-dashboard" }, // center tab
     { path: "/orders", label: "Orders", icon: "clipboard-list" },
     { path: "/profile", label: "Profile", icon: "account" },
