@@ -4,23 +4,24 @@ import * as ImagePicker from "expo-image-picker";
 import { db } from "../helpers/firebaseConfig";
 import { collection, getDocs, addDoc } from "firebase/firestore";
 
-export default function CategoryModal({ visible, onClose, onSelect }) {
-  const [categories, setCategories] = useState([]);
+export default function SubCategoryModal({ visible, onClose, onSelect }) {
+  const [subCategories, setSubCategories] = useState([]);
   const [search, setSearch] = useState("");
-  const [newCategory, setNewCategory] = useState("");
+  const [newSubCategory, setNewSubCategory] = useState("");
   const [imageUri, setImageUri] = useState(null);
 
+  // Fetch all subcategories
   useEffect(() => {
-    const fetchCategories = async () => {
-      const snapshot = await getDocs(collection(db, "categories"));
+    const fetchSubCategories = async () => {
+      const snapshot = await getDocs(collection(db, "subcategories"));
       const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setCategories(data);
+      setSubCategories(data);
     };
-    fetchCategories();
+    fetchSubCategories();
   }, []);
 
-  const filteredCategories = categories.filter((cat) =>
-    cat.name.toLowerCase().includes(search.toLowerCase())
+  const filteredSubCategories = subCategories.filter((sub) =>
+    sub.name.toLowerCase().includes(search.toLowerCase())
   );
 
   // ✅ Expo ImagePicker with MediaTypeOptions.Images
@@ -38,24 +39,24 @@ export default function CategoryModal({ visible, onClose, onSelect }) {
     }
   };
 
-  const handleSaveNewCategory = async () => {
-    if (newCategory.trim()) {
+  const handleSaveNewSubCategory = async () => {
+    if (newSubCategory.trim()) {
       try {
-        const docRef = await addDoc(collection(db, "categories"), {
-          name: newCategory.trim(),
+        const docRef = await addDoc(collection(db, "subcategories"), {
+          name: newSubCategory.trim(),
           image: imageUri, // ✅ just store local URI
           createdAt: new Date().toISOString(),
         });
 
-        setCategories([
-          ...categories,
-          { id: docRef.id, name: newCategory.trim(), image: imageUri },
+        setSubCategories([
+          ...subCategories,
+          { id: docRef.id, name: newSubCategory.trim(), image: imageUri },
         ]);
 
-        setNewCategory("");
+        setNewSubCategory("");
         setImageUri(null);
       } catch (error) {
-        console.error("Error saving category:", error);
+        console.error("Error saving subcategory:", error);
       }
     }
   };
@@ -63,14 +64,14 @@ export default function CategoryModal({ visible, onClose, onSelect }) {
   return (
     <Modal visible={visible} animationType="slide">
       <View style={styles.modalContainer}>
-        <Text style={styles.modalTitle}>Manage Categories</Text>
+        <Text style={styles.modalTitle}>Manage Subcategories</Text>
 
-        {/* Add New Category */}
-        <Text style={styles.subHeader}>Add New Category</Text>
+        {/* Add New Subcategory */}
+        <Text style={styles.subHeader}>Add New Subcategory</Text>
         <TextInput
-          placeholder="Enter Category Name"
-          value={newCategory}
-          onChangeText={setNewCategory}
+          placeholder="Enter Subcategory Name"
+          value={newSubCategory}
+          onChangeText={setNewSubCategory}
           style={styles.input}
         />
 
@@ -79,21 +80,21 @@ export default function CategoryModal({ visible, onClose, onSelect }) {
         </TouchableOpacity>
         {imageUri && <Image source={{ uri: imageUri }} style={styles.preview} />}
 
-        <TouchableOpacity style={styles.saveBtn} onPress={handleSaveNewCategory}>
-          <Text style={styles.saveText}>Save Category</Text>
+        <TouchableOpacity style={styles.saveBtn} onPress={handleSaveNewSubCategory}>
+          <Text style={styles.saveText}>Save Subcategory</Text>
         </TouchableOpacity>
 
         {/* Search Bar */}
         <TextInput
-          placeholder="Search Category"
+          placeholder="Search Subcategory"
           value={search}
           onChangeText={setSearch}
           style={styles.searchInput}
         />
 
-        {/* Category List */}
+        {/* Subcategory List */}
         <FlatList
-          data={filteredCategories}
+          data={filteredSubCategories}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <TouchableOpacity
@@ -133,9 +134,6 @@ const styles = StyleSheet.create({
   closeBtn: { backgroundColor: "#cc0000", paddingVertical: 12, borderRadius: 6, alignItems: "center", marginTop: 20 },
   closeText: { color: "#fff", fontWeight: "700" },
 });
-
-
-
 
 
 

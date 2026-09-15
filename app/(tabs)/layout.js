@@ -16,6 +16,7 @@ export default function TabLayout() {
           <Tabs.Screen name="/business/AddItem" options={{ title: "Additem" }} />
              <Tabs.Screen name="AddItemUnit" options={{ title: "Additemunit" }} />
               <Tabs.Screen name="AddCategory" options={{ title: "Addcategory" }} />
+               <Tabs.Screen name="AddSubCategory" options={{ title: "Addsubcategory" }} />
                 <Tabs.Screen name="ProductList" options={{ title: "productlist" }} />
       <Tabs.Screen name="JobDetails" options={{ title: "JobsDetails" }} />
     </Tabs>

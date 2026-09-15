@@ -5,43 +5,32 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import * as ImagePicker from "expo-image-picker";
 import { db } from "../../app/helpers/firebaseConfig";
 import { collection, getDocs, addDoc } from "firebase/firestore";
-import { uploadImageToCloudinary } from "../../app/helpers/cloudinaryHelper"; // ✅ new helper
+import { uploadImageToCloudinary } from "../../app/helpers/cloudinaryHelper";
 
-export default function AddCategory() {
+export default function AddSubCategory() {
   const router = useRouter();
   const [search, setSearch] = useState("");
-  const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [newCategory, setNewCategory] = useState("");
+  const [subCategories, setSubCategories] = useState([]);
+  const [selectedSubCategory, setSelectedSubCategory] = useState("");
+  const [newSubCategory, setNewSubCategory] = useState("");
   const [imageUri, setImageUri] = useState(null);
 
-  // ✅ Fetch categories from Firebase
+  // ✅ Fetch subcategories from Firebase
   useEffect(() => {
-    const fetchCategories = async () => {
-      const snapshot = await getDocs(collection(db, "categories"));
+    const fetchSubCategories = async () => {
+      const snapshot = await getDocs(collection(db, "subcategories"));
       const data = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
-      setCategories(data);
+      setSubCategories(data);
     };
-    fetchCategories();
+    fetchSubCategories();
   }, []);
 
-  const filteredCategories = categories.filter((cat) =>
-    cat.name.toLowerCase().includes(search.toLowerCase())
+  const filteredSubCategories = subCategories.filter((sub) =>
+    sub.name.toLowerCase().includes(search.toLowerCase())
   );
-
-  const handleApply = () => {
-    if (selectedCategory) {
-      router.push({
-        pathname: "/business/AddItem",
-        params: { category: selectedCategory },
-      });
-    } else {
-      router.back();
-    }
-  };
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -53,63 +42,75 @@ export default function AddCategory() {
     }
   };
 
-  // ✅ Save new category to Firebase with image
-  const handleSaveNewCategory = async () => {
-    if (newCategory.trim()) {
+  const handleSaveNewSubCategory = async () => {
+    if (newSubCategory.trim()) {
       let uploadedUrl = null;
       if (imageUri) {
         uploadedUrl = await uploadImageToCloudinary(imageUri);
       }
-      await addDoc(collection(db, "categories"), {
-        name: newCategory.trim(),
+      await addDoc(collection(db, "subcategories"), {
+        name: newSubCategory.trim(),
         image: uploadedUrl,
         createdAt: new Date().toISOString(),
       });
-      setCategories([...categories, { name: newCategory.trim(), image: uploadedUrl }]);
-      setNewCategory("");
+      setSubCategories([...subCategories, { name: newSubCategory.trim(), image: uploadedUrl }]);
+      setNewSubCategory("");
       setImageUri(null);
+    }
+  };
+
+  const handleApply = () => {
+    if (selectedSubCategory) {
+      router.push({
+        pathname: "/business/AddItem",
+        params: { subcategory: selectedSubCategory },
+      });
+    } else {
+      router.back();
     }
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* Sticky Header fills safe area */}
       <View style={styles.headerRow}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Icon name="arrow-left" size={24} color="#fff" />
         </TouchableOpacity>
-        <Text style={styles.headerText}>Select Category</Text>
+        <Text style={styles.headerText}>Select Subcategory</Text>
       </View>
 
-      {/* FlatList as main scroll container */}
+
       <FlatList
-        data={filteredCategories}
+        data={filteredSubCategories}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <TouchableOpacity style={styles.categoryRow} onPress={() => setSelectedCategory(item.name)}>
+          <TouchableOpacity
+            style={styles.categoryRow}
+            onPress={() => setSelectedSubCategory(item.name)}
+          >
             <View style={{ flexDirection: "row", alignItems: "center" }}>
-              {item.image && <Image source={{ uri: item.image }} style={styles.iconImage} />}
+              {item.image && (
+                <Image source={{ uri: item.image }} style={styles.iconImage} />
+              )}
               <Text style={styles.categoryText}>{item.name}</Text>
             </View>
-            {selectedCategory === item.name && <Text style={styles.tickSymbol}>✔</Text>}
+            {selectedSubCategory === item.name && <Text style={styles.tickSymbol}>✔</Text>}
           </TouchableOpacity>
         )}
         ListHeaderComponent={
           <View style={styles.container}>
-            {/* Search Bar */}
+              {/* Search Bar */}
+      <TextInput
+        placeholder="Search Subcategory"
+        value={search}
+        onChangeText={setSearch}
+        style={styles.searchInput}
+      />
+            <Text style={styles.subHeader}>Add New Subcategory</Text>
             <TextInput
-              placeholder="Search Category"
-              value={search}
-              onChangeText={setSearch}
-              style={styles.searchInput}
-            />
-
-            {/* Add New Category Form */}
-            <Text style={styles.subHeader}>Add New Category</Text>
-            <TextInput
-              placeholder="Enter Category Name"
-              value={newCategory}
-              onChangeText={setNewCategory}
+              placeholder="Enter Subcategory Name"
+              value={newSubCategory}
+              onChangeText={setNewSubCategory}
               style={styles.input}
             />
 
@@ -118,15 +119,14 @@ export default function AddCategory() {
             </TouchableOpacity>
             {imageUri && <Image source={{ uri: imageUri }} style={styles.preview} />}
 
-            <TouchableOpacity style={styles.saveBtn} onPress={handleSaveNewCategory}>
-              <Text style={styles.saveText}>Save Category</Text>
+            <TouchableOpacity style={styles.saveBtn} onPress={handleSaveNewSubCategory}>
+              <Text style={styles.saveText}>Save Subcategory</Text>
             </TouchableOpacity>
           </View>
         }
         contentContainerStyle={{ paddingBottom: 100 }}
       />
 
-      {/* Sticky Apply Button full-width */}
       <View style={styles.stickyButtonRow}>
         <TouchableOpacity style={styles.applyButton} onPress={handleApply}>
           <Text style={styles.applyText}>Apply</Text>
@@ -191,6 +191,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   categoryText: { fontSize: 14, color: "#333", marginLeft: 8 },
+  tickSymbol: { fontSize: 18, color: "#006d3a", fontWeight: "bold" },
   stickyButtonRow: {
     position: "absolute",
     bottom: 0,
@@ -206,10 +207,8 @@ const styles = StyleSheet.create({
     borderRadius: 0,
   },
   applyText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
-  tickSymbol: { fontSize: 18, color: "#006d3a", fontWeight: "bold" },
   iconImage: { width: 40, height: 40, borderRadius: 6 },
 });
-
 
 
 
