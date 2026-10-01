@@ -49,7 +49,7 @@ export default function PricingForm({ pricingData, onPricingChange }) {
   placeholder="Disc. On Sale Price"
   value={discount}
   keyboardType="numeric"
-  maxLength={2} // restrict to 2 digits
+  maxLength={2} 
   onChangeText={(val) => {
     // allow only numbers
     const numericVal = val.replace(/[^0-9]/g, "");
@@ -63,7 +63,7 @@ export default function PricingForm({ pricingData, onPricingChange }) {
       <DropdownModal visible={discountDropdownVisible} options={discountOptions} onClose={() => setDiscountDropdownVisible(false)} onSelect={(val) => onPricingChange({ ...pricingData, discountType: val })} />
 
       {/* Purchase Price */}
-      <Text style={styles.sectionTitle}>Purchase Price</Text>
+      <Text style={styles.sectionTitle}>Purchace Price</Text>
       <TouchableOpacity style={styles.inputRowFull} onPress={() => setPurchaseDropdownVisible(true)} activeOpacity={0.7}>
     <TextInput
   style={[styles.input, { flex: 1 }]}

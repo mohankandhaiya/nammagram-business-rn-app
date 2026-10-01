@@ -12,7 +12,7 @@ import ItemDetailsForm from "../components/ItemDetailsForm";
 
 import { collection, addDoc, updateDoc, doc } from "firebase/firestore";
 import { db } from "../helpers/firebaseConfig";
-import { uploadImageToCloudinary } from "../helpers/cloudinaryHelper";
+// import { uploadImageToCloudinary } from "../helpers/cloudinaryHelper";
 
 export default function AddItem({ initialData = {} }) {
   const router = useRouter();
@@ -36,44 +36,50 @@ export default function AddItem({ initialData = {} }) {
 
   // 🔹 Inline saveItem logic (was useSaveItem hook)
   const saveItem = async () => {
-    try {
-      // Upload images to Cloudinary
-      let imageUrls = [];
-      for (const uri of images) {
-        const url = await uploadImageToCloudinary(uri);
-        imageUrls.push(url);
-      }
+  try {
+    const productData = {
+      itemName,
+      itemCode,
+      itemCategory,
+      itemSubCategory,
+      hsnCode,
+      pricing: pricingData,
+      stock: stockData,
+      images, // ✅ Store local image URIs directly
+      updatedAt: new Date(),
+    };
 
-      const productData = {
-        itemName,
-        itemCode,
-        itemCategory,
-        itemSubCategory,
-        hsnCode,
-        pricing: pricingData,
-        stock: stockData,
-        images: imageUrls,
-        updatedAt: new Date(),
+    if (initialData?.id) {
+      // EDIT MODE
+      const productRef = doc(db, "products", initialData.id);
+
+      await updateDoc(productRef, productData);
+
+      return {
+        success: true,
+        message: "Product updated successfully!",
       };
+    } else {
+      // ADD MODE
+      await addDoc(collection(db, "products"), {
+        ...productData,
+        createdAt: new Date(),
+      });
 
-      if (initialData?.id) {
-        // EDIT MODE
-        const productRef = doc(db, "products", initialData.id);
-        await updateDoc(productRef, productData);
-        return { success: true, message: "Product updated successfully!" };
-      } else {
-        // ADD MODE
-        await addDoc(collection(db, "products"), {
-          ...productData,
-          createdAt: new Date(),
-        });
-        return { success: true, message: "Product added successfully!" };
-      }
-    } catch (error) {
-      console.error("Error saving item:", error);
-      return { success: false, message: "Failed to save item." };
+      return {
+        success: true,
+        message: "Product added successfully!",
+      };
     }
-  };
+  } catch (error) {
+    console.error("Error saving item:", error);
+
+    return {
+      success: false,
+      message: "Failed to save item.",
+    };
+  }
+};
 
   // Save handler
   const handleSaveItem = async () => {
@@ -203,57 +209,25 @@ export default function AddItem({ initialData = {} }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
-   header: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#006d3a", // your green theme
-    paddingVertical: 20,
-    paddingHorizontal: 15,
+   header: {flexDirection: "row",alignItems: "center",backgroundColor: "#006d3a", paddingVertical: 20,paddingHorizontal: 15,
   },
   backButton: { marginRight: 12 },
   headerTitle: { fontSize: 18, fontWeight: "bold", color: "#fff" },
   scrollContent: { padding: 16, paddingBottom: 100 },
   inputRow: { flexDirection: "row", alignItems: "center", marginBottom: 12 },
-  input: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 6,
-    padding: 12,
-  },
+  input: {flex: 1,borderWidth: 1,borderColor: "#ccc",borderRadius: 6,padding: 12,},
   categoryInput: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   dropdownIcon: { marginLeft: 8 },
     tabRow: { flexDirection: "row", marginTop: 16, marginBottom: 12 },
-  tabButton: {
-    flex: 1,
-    paddingVertical: 10,
-    borderWidth: 1,
-    borderColor: "#006d3a",
-    alignItems: "center",
-    borderRadius: 6,
-    marginHorizontal: 4,
+  tabButton: {flex: 1,paddingVertical: 10,borderWidth: 1,borderColor: "#006d3a",alignItems: "center",borderRadius: 6,marginHorizontal: 4,
   },
   activeTab: { backgroundColor: "#006d3a" },
   tabText: { color: "#006d3a", fontWeight: "600" },
   activeTabText: { color: "#fff" },
-  stickyButtonRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: "#ccc",
-    backgroundColor: "#fff",
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
+  stickyButtonRow: {flexDirection: "row",justifyContent: "space-between",padding: 16,borderTopWidth: 1,borderTopColor: "#ccc",backgroundColor: "#fff",position: "absolute",
+    bottom: 0,left: 0,right: 0,
   },
-  button: {
-    flex: 1,
-    padding: 12,
-    borderRadius: 6,
-    alignItems: "center",
-    marginHorizontal: 5,
+  button: {flex: 1,padding: 12,borderRadius: 6,alignItems: "center", marginHorizontal: 5,
   },
   cancel: { backgroundColor: "#cc0000" },
   save: { backgroundColor: "#006d3a" },

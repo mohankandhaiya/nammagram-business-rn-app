@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, Image, Modal } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, Image, Modal,Alert, } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { db } from "../helpers/firebaseConfig";
-import { collection, getDocs, addDoc } from "firebase/firestore";
-
+import { collection, getDocs, addDoc, deleteDoc,
+  doc, } from "firebase/firestore";
+import { MaterialIcons } from "@expo/vector-icons";
 export default function CategoryModal({ visible, onClose, onSelect }) {
   const [categories, setCategories] = useState([]);
   const [search, setSearch] = useState("");
@@ -59,7 +60,34 @@ export default function CategoryModal({ visible, onClose, onSelect }) {
       }
     }
   };
+const handleDeleteCategory = async (categoryId) => {
+  try {
+    await deleteDoc(doc(db, "categories", categoryId));
 
+    setCategories((prev) =>
+      prev.filter((item) => item.id !== categoryId)
+    );
+
+    console.log("Category deleted successfully");
+  } catch (error) {
+    console.error("Error deleting category:", error);
+  }
+};
+
+const confirmDelete = (categoryId, categoryName) => {
+  Alert.alert(
+    "Delete Category",
+    `Are you sure you want to delete "${categoryName}"?`,
+    [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: () => handleDeleteCategory(categoryId),
+      },
+    ]
+  );
+};
   return (
     <Modal visible={visible} animationType="slide">
       <View style={styles.modalContainer}>
@@ -95,18 +123,45 @@ export default function CategoryModal({ visible, onClose, onSelect }) {
         <FlatList
           data={filteredCategories}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={styles.categoryRow}
-              onPress={() => {
-                onSelect?.(item.name);
-                onClose?.();
-              }}
-            >
-              {item.image && <Image source={{ uri: item.image }} style={styles.iconImage} />}
-              <Text style={styles.categoryText}>{item.name}</Text>
-            </TouchableOpacity>
-          )}
+        renderItem={({ item }) => (
+  <View style={styles.categoryRow}>
+    
+    <TouchableOpacity
+      style={styles.categoryInfo}
+      onPress={() => {
+        onSelect?.(item.name);
+        onClose?.();
+      }}
+    >
+      {item.image && (
+        <Image
+          source={{ uri: item.image }}
+          style={styles.iconImage}
+        />
+      )}
+
+      <Text style={styles.categoryText}>{item.name}</Text>
+    </TouchableOpacity>
+
+    {/* <TouchableOpacity
+      style={styles.deleteBtn}
+      onPress={() =>
+        confirmDelete(item.id, item.name)
+      }
+    >
+      <Text style={styles.deleteText}>Delete</Text>
+    </TouchableOpacity> */}
+<TouchableOpacity
+  onPress={() => confirmDelete(item.id, item.name)}
+>
+  <MaterialIcons
+    name="delete"
+    size={24}
+    color="red"
+  />
+</TouchableOpacity>
+  </View>
+)}
         />
 
         {/* Close Modal */}
@@ -132,6 +187,23 @@ const styles = StyleSheet.create({
   iconImage: { width: 40, height: 40, borderRadius: 6 },
   closeBtn: { backgroundColor: "#cc0000", paddingVertical: 12, borderRadius: 6, alignItems: "center", marginTop: 20 },
   closeText: { color: "#fff", fontWeight: "700" },
+  categoryInfo: {
+  flex: 1,
+  flexDirection: "row",
+  alignItems: "center",
+},
+
+deleteBtn: {
+  backgroundColor: "#cc0000",
+  paddingHorizontal: 12,
+  paddingVertical: 6,
+  borderRadius: 6,
+},
+
+deleteText: {
+  color: "#fff",
+  fontWeight: "600",
+},
 });
 
 

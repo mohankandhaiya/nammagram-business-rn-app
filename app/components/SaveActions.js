@@ -8,6 +8,7 @@ export default function SaveActions({ onSave, onCancel }) {
         <Text style={styles.buttonText}>Cancel</Text>
       </TouchableOpacity>
       <TouchableOpacity style={[styles.button, styles.save]} onPress={onSave}>
+        
         <Text style={styles.buttonText}>Save</Text>
       </TouchableOpacity>
     </View>

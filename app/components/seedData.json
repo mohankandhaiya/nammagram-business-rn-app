@@ -1,0 +1,174 @@
+{
+  "categories": [
+    {
+      "id": "1",
+      "name": "Electronics"
+    },
+    {
+      "id": "2",
+      "name": "Clothes"
+    },
+    {
+      "id": "3",
+      "name": "Construction Products"
+    },
+    {
+      "id": "4",
+      "name": "Groceries"
+    }
+  ],
+  "subcategories": [
+    {
+      "id": "1a",
+      "categoryId": "1",
+      "name": "Mobiles"
+    },
+    {
+      "id": "1b",
+      "categoryId": "1",
+      "name": "Laptops"
+    },
+    {
+      "id": "1c",
+      "categoryId": "1",
+      "name": "Headphones"
+    },
+    {
+      "id": "2a",
+      "categoryId": "2",
+      "name": "Men's Wear"
+    },
+    {
+      "id": "2b",
+      "categoryId": "2",
+      "name": "Women's Wear"
+    },
+    {
+      "id": "2c",
+      "categoryId": "2",
+      "name": "Kids' Wear"
+    },
+    {
+      "id": "3a",
+      "categoryId": "3",
+      "name": "Cement"
+    },
+    {
+      "id": "3b",
+      "categoryId": "3",
+      "name": "Bricks"
+    },
+    {
+      "id": "3c",
+      "categoryId": "3",
+      "name": "Steel"
+    },
+    {
+      "id": "4a",
+      "categoryId": "4",
+      "name": "Vegetable"
+    },
+    {
+      "id": "4b",
+      "categoryId": "4",
+      "name": "Fruits"
+    },
+    {
+      "id": "4c",
+      "categoryId": "4",
+      "name": "Dairy"
+    }
+  ],
+  "products": [
+    {
+      "id": "p1",
+      "categoryId": "1",
+      "subCategoryId": "1a",
+      "name": "iPhone 14",
+      "price": 80000,
+      "oldPrice": 85000,
+      "discount": 6
+    },
+    {
+      "id": "p2",
+      "categoryId": "1",
+      "subCategoryId": "1a",
+      "name": "Samsung Galaxy S23",
+      "price": 75000,
+      "oldPrice": 80000,
+      "discount": 6
+    },
+    {
+      "id": "p3",
+      "categoryId": "1",
+      "subCategoryId": "1b",
+      "name": "Dell Laptop",
+      "price": 60000,
+      "oldPrice": 65000,
+      "discount": 8
+    },
+    {
+      "id": "p4",
+      "categoryId": "1",
+      "subCategoryId": "1b",
+      "name": "MacBook Air",
+      "price": 95000,
+      "oldPrice": 100000,
+      "discount": 5
+    },
+    {
+      "id": "p7",
+      "categoryId": "2",
+      "subCategoryId": "2a",
+      "name": "Men's T-Shirt",
+      "price": 500,
+      "oldPrice": 700,
+      "discount": 28
+    },
+    {
+      "id": "p8",
+      "categoryId": "2",
+      "subCategoryId": "2a",
+      "name": "Men's Jeans",
+      "price": 1200,
+      "oldPrice": 1500,
+      "discount": 20
+    },
+    {
+      "id": "p13",
+      "categoryId": "3",
+      "subCategoryId": "3a",
+      "name": "Cement Bag",
+      "price": 400,
+      "oldPrice": 450,
+      "discount": 11
+    },
+    {
+      "id": "p14",
+      "categoryId": "3",
+      "subCategoryId": "3a",
+      "name": "UltraTech Cement",
+      "price": 420,
+      "oldPrice": 470,
+      "discount": 10
+    },
+    {
+      "id": "p19",
+      "categoryId": "4",
+      "subCategoryId": "4a",
+      "name": "Tomatoes",
+      "price": 40,
+      "oldPrice": 50,
+      "discount": 20
+    },
+    {
+      "id": "p20",
+      "categoryId": "4",
+      "subCategoryId": "4a",
+      "name": "Potatoes",
+      "price": 30,
+      "oldPrice": 40,
+      "discount": 25
+    }
+  ]
+}

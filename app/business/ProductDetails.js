@@ -21,20 +21,6 @@ export default function ProductDetails() {
       params: { product: JSON.stringify(parsedProduct) },
     });
   };
-
-  // const handleDelete = () => {
-  //   Alert.alert("Delete Product", "Are you sure you want to delete this product?", [
-  //     { text: "Cancel", style: "cancel" },
-  //     {
-  //       text: "Delete",
-  //       style: "destructive",
-  //       onPress: () => {
-  //         // TODO: implement delete logic
-  //         router.back();
-  //       },
-  //     },
-  //   ]);
-  // };
 const handleDelete = async () => {
   Alert.alert("Delete Product", "Are you sure?", [
     { text: "Cancel", style: "cancel" },
@@ -74,6 +60,7 @@ const handleDelete = async () => {
       </View>
 
       {/* Scrollable Content */}
+      
       <ScrollView contentContainerStyle={styles.content}>
         {/* Image Carousel */}
         {parsedProduct.images && parsedProduct.images.length > 0 && (
@@ -87,10 +74,12 @@ const handleDelete = async () => {
               keyExtractor={(item, idx) => idx.toString()}
               renderItem={({ item }) => (
                 <Image source={{ uri: item }} style={styles.image} />
+                
               )}
             />
             {/* Dots Overlay */}
             <View style={styles.dotsContainer}>
+               
               {parsedProduct.images.map((_, idx) => (
                 <View
                   key={idx}

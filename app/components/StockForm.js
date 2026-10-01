@@ -14,7 +14,8 @@ export default function StockForm({ stockData, onStockChange }) {
   style={styles.input}
   placeholder="Opening Stock (Ex: 300)"
   value={openingStock?.toString()}
-  onChangeText={(val) =>
+ 
+   onChangeText={(val) =>
     onStockChange({ ...stockData, openingStock: Number(val) })
   }
   keyboardType="numeric"
